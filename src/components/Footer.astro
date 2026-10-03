@@ -1,0 +1,121 @@
+---
+/**
+ * cnsqdesigns — footer
+ * =====================================================================
+ * ARCHITECTURAL DECISIONS
+ * ---------------------------------------------------------------------
+ * 1. `<footer>` is the document's contentinfo landmark, so it holds the
+ *    things a visitor looks for after reading: the wordmark (a route back
+ *    to the top), the social profiles and the copyright.
+ * 2. The year is computed at build time from the machine clock rather than
+ *    hard-coded, which would silently rot. This is a static site, so a
+ *    rebuild is required for the new year to appear — the trade-off is
+ *    deliberate: zero JavaScript in exchange for one build per year.
+ * 3. Social links and their accessible names come from CONTACT.socials, so
+ *    adding a profile is a one-line data change.
+ */
+
+import { CONTACT, FOOTER, SECTIONS, SITE } from '@/data/site';
+import Wordmark from '@/components/Wordmark.astro';
+import SocialLinks from '@/components/SocialLinks.astro';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="cnsq-footer">
+  <div class="cnsq-footer__inner">
+    <div class="cnsq-footer__brand">
+      <Wordmark size="sm" />
+      <p class="cnsq-footer__note">{FOOTER.note}</p>
+    </div>
+
+    <nav class="cnsq-footer__nav" aria-label="Footer">
+      <ul class="cnsq-footer__list">
+        {
+          SECTIONS.map((section) => (
+            <li>
+              <a class="cnsq-link" href={`#${section.id}`}>
+                {section.label}
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <a class="cnsq-link" href={CONTACT.email ? `mailto:${CONTACT.email}` : '#contact'}>
+            Email
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <SocialLinks class="cnsq-footer__social" />
+
+    <div class="cnsq-footer__legal">
+      <p>© {year} {SITE.name}. {FOOTER.legal}</p>
+      <p class="cnsq-footer__colophon">
+        Built with Astro and SASS. Hand-coded, no page builder.
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style lang="scss">
+  @use 'abstracts/mixins' as mix;
+
+  .cnsq-footer {
+    border-block-start: 1px solid var(--csq-line);
+    background-color: var(--csq-ink-raised);
+
+    &__inner {
+      @include mix.shell;
+
+      display: grid;
+      gap: var(--csq-space-lg);
+      padding-block: var(--csq-space-xl);
+    }
+
+    &__note {
+      margin-block-start: var(--csq-space-xs);
+      font-size: var(--csq-step--1);
+      color: var(--csq-paper-faint);
+      max-width: 34ch;
+    }
+
+    &__list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--csq-space-xs) var(--csq-space-md);
+      font-size: var(--csq-step--1);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    &__legal {
+      padding-block-start: var(--csq-space-md);
+      border-block-start: 1px solid var(--csq-line);
+      font-size: var(--csq-step--2);
+      color: var(--csq-paper-faint);
+    }
+
+    &__colophon {
+      margin-block-start: var(--csq-space-3xs);
+      font-size: var(--csq-step--2);
+      color: var(--csq-paper-faint);
+    }
+  }
+
+  @include mix.from('md') {
+    .cnsq-footer__inner {
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .cnsq-footer__social {
+      justify-self: end;
+    }
+
+    .cnsq-footer__legal {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

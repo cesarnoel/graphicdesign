@@ -1,0 +1,153 @@
+---
+/**
+ * cnsqdesigns — about section
+ * =====================================================================
+ * ARCHITECTURAL DECISIONS
+ * ---------------------------------------------------------------------
+ * 1. The portrait is rendered through `<Picture>` with AVIF/WebP sources
+ *    and explicit `widths`/`sizes`. Astro emits a correct `srcset`, so a
+ *    phone downloads a ~360px image instead of the full-resolution
+ *    original — this is the single biggest image saving on the page.
+ *    Intrinsic width/height are written into the markup by Astro, which
+ *    removes layout shift entirely (CLS 0).
+ * 2. `loading="lazy"` + `decoding="async"` because the portrait sits below
+ *    the fold. Nothing in the About section competes with the hero for the
+ *    LCP budget.
+ * 3. The resume CTA is a real file in /public, not a dynamic response, so
+ *    Netlify serves it from the CDN edge with a long cache lifetime (see
+ *    the [[headers]] block in netlify.toml). `type` is emitted as
+ *    `application/pdf` so browsers treat it correctly.
+ * 4. The asset is resolved by base name through src/lib/assets.ts, which
+ *    fails the build if the file is missing — a typo becomes a build error
+ *    instead of a broken image in production.
+ * 5. `aria-labelledby` on the <section> names the region for assistive
+ *    technology, using the id emitted by SectionHeading.astro.
+ */
+
+import { Picture } from 'astro:assets';
+
+import { ABOUT } from '@/data/site';
+import { requireAsset } from '@/lib/assets';
+import SectionHeading from '@/components/SectionHeading.astro';
+
+const portrait = requireAsset(ABOUT.portrait.baseName);
+---
+
+<section id="about" class="cnsq-about" aria-labelledby="about-heading">
+  <div class="cnsq-about__inner">
+    <SectionHeading
+      eyebrow={ABOUT.eyebrow}
+      heading={ABOUT.heading}
+      sectionId="about"
+      level="h2"
+    />
+
+    <div class="cnsq-about__body">
+      <figure class="cnsq-about__figure cnsq-reveal">
+        <Picture
+          src={portrait}
+          formats={['avif', 'webp']}
+          fallbackFormat="jpeg"
+          widths={[360, 540, 720, 900]}
+          sizes="(min-width: 64rem) 34vw, (min-width: 48rem) 44vw, 84vw"
+          alt={ABOUT.portrait.alt}
+          loading="lazy"
+          decoding="async"
+        />
+        <figcaption class="cnsq-about__caption">
+          Davao City · studio practice
+        </figcaption>
+      </figure>
+
+      <div class="cnsq-about__copy">
+        {ABOUT.paragraphs.map((paragraph, index) => (
+          <p class:list={['cnsq-about__paragraph', index === 0 && 'cnsq-about__paragraph--lead']}>
+            {paragraph}
+          </p>
+        ))}
+
+        <a class="cnsq-button cnsq-button--ghost cnsq-about__resume" href={ABOUT.resume.href} type="application/pdf">
+          {ABOUT.resume.label}
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style lang="scss">
+  @use 'abstracts/mixins' as mix;
+
+  .cnsq-about {
+    @include mix.section-shell;
+
+    &__inner {
+      @include mix.shell;
+    }
+
+    &__body {
+      display: grid;
+      gap: var(--csq-space-lg);
+    }
+
+    &__figure {
+      margin: 0;
+      position: relative;
+    }
+
+    // A hairline frame offset behind the portrait — the "two sheets of
+    // paper" gesture, done with a pseudo-element so it costs nothing.
+    &__figure::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      translate: 0.75rem 0.75rem;
+      border: 1px solid var(--csq-accent);
+      pointer-events: none;
+    }
+
+    &__caption {
+      margin-block-start: var(--csq-space-sm);
+      font-size: var(--csq-step--2);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--csq-paper-faint);
+    }
+
+    &__copy {
+      display: grid;
+      gap: var(--csq-space-sm);
+      align-content: start;
+    }
+
+    &__paragraph {
+      max-width: 58ch;
+    }
+
+    // First paragraph is set larger: it is the "lead" of the bio.
+    &__paragraph--lead {
+      font-size: var(--csq-step-1);
+      line-height: var(--csq-leading-relaxed);
+      color: var(--csq-paper);
+    }
+
+    &__resume {
+      justify-self: start;
+      margin-block-start: var(--csq-space-xs);
+    }
+  }
+
+  @include mix.from('md') {
+    .cnsq-about__body {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+      gap: var(--csq-space-xl);
+      align-items: start;
+    }
+  }
+
+  @include mix.from('lg') {
+    .cnsq-about__body {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 6fr);
+      gap: var(--csq-space-2xl);
+    }
+  }
+</style>

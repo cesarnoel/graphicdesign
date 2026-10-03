@@ -1,0 +1,102 @@
+---
+/**
+ * cnsqdesigns — section heading
+ * =====================================================================
+ * ARCHITECTURAL DECISIONS
+ * ---------------------------------------------------------------------
+ * 1. Every section renders its title through this component, which keeps
+ *    the eyebrow/heading rhythm identical site-wide and guarantees the
+ *    heading id follows one convention: `<sectionId>-heading`.
+ * 2. That id is what each `<section aria-labelledby="...">` points at.
+ *    Naming a region is the single highest-value accessibility win on a
+ *    one-page site: it turns "section 3 of 5" into "Services section".
+ * 3. The heading level is a prop, but defaults to h2. The page keeps one
+ *    h1 (the hero) and never skips levels — heading order is a WCAG
+ *    requirement, and a template is exactly where that gets broken.
+ * 4. Copy comes from props (which come from src/data/site.ts), but the
+ *    component still accepts a slot so a section can add a lead paragraph
+ *    or a CTA beside the title.
+ */
+
+export interface Props {
+  /** Small all-caps label above the title. */
+  readonly eyebrow: string;
+  /** The section title itself. */
+  readonly heading: string;
+  /** Matches the `<section>` id so aria-labelledby can find the heading. */
+  readonly sectionId: string;
+  readonly level?: 'h1' | 'h2' | 'h3';
+  /** Renders the title in the larger display step (used by the hero). */
+  readonly size?: 'md' | 'lg';
+}
+
+const { eyebrow, heading, sectionId, level = 'h2', size = 'md' } = Astro.props;
+
+const Heading = level;
+---
+
+<div class:list={['cnsq-heading', `cnsq-heading--${size}`]}>
+  <p class="cnsq-eyebrow cnsq-heading__eyebrow">{eyebrow}</p>
+  <Heading class="cnsq-heading__title" id={`${sectionId}-heading`}>{heading}</Heading>
+  {
+    /* Slot content (lead paragraph, CTA group) is placed after the title so
+       it always reads in the right order in the accessibility tree. */
+  }
+  <div class="cnsq-heading__aside">
+    <slot />
+  </div>
+</div>
+
+<style lang="scss">
+  @use 'abstracts/mixins' as mix;
+
+  .cnsq-heading {
+    display: grid;
+    gap: var(--csq-space-sm);
+    margin-block-end: var(--csq-space-lg);
+
+    &__title {
+      max-width: 24ch;
+    }
+
+    // The vertical rule between the eyebrow and the title is the same
+    // vermilion gesture as in the header, at zero layout cost.
+    &__eyebrow {
+      margin-block-end: var(--csq-space-3xs);
+    }
+
+    &__aside:empty {
+      display: none;
+    }
+
+    &--lg &__title {
+      font-size: var(--csq-step-5);
+      max-width: 22ch;
+    }
+
+    &--md &__title {
+      font-size: var(--csq-step-4);
+    }
+  }
+
+  @include mix.from('md') {
+    .cnsq-heading {
+      // Type on the left, supporting content on the right — a two-column
+      // editorial masthead rather than a centred stack.
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      align-items: end;
+      column-gap: var(--csq-space-xl);
+    }
+
+    .cnsq-heading__eyebrow,
+    .cnsq-heading__title {
+      grid-column: 1;
+    }
+
+    .cnsq-heading__aside {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      align-self: end;
+    }
+  }
+</style>

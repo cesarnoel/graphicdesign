@@ -1,0 +1,191 @@
+---
+/**
+ * cnsqdesigns — hero
+ * =====================================================================
+ * ARCHITECTURAL DECISIONS
+ * ---------------------------------------------------------------------
+ * 1. The hero contains NO image. The largest contentful paint is therefore
+ *    a block of preloaded text, which is the cheapest possible LCP — no
+ *    hero photograph to download, no eager image in the critical path.
+ *    Atmosphere is produced with CSS (the ambient hatch in
+ *    src/styles/base/_ambient.scss plus the specimen grid below), so the
+ *    visual weight survives with zero bytes.
+ * 2. Entrance animation is CSS-only and stagger-scheduled with inline
+ *    `--cnsq-delay` custom properties. No animation library, no client JS,
+ *    and `prefers-reduced-motion` users see the final layout immediately.
+ *    The <h1> uses the transform-only `.cnsq-lift` variant so the LCP
+ *    element is opaque in the first frame (see the note in _motion.scss).
+ * 3. The facts row is a real <dl>, and the rotated edge label is
+ *    `aria-hidden` because it duplicates that list — decorative repetition
+ *    must never be announced twice by a screen reader.
+ * 4. One <h1> per page: the hero owns it, sections use <h2>.
+ * 5. CTA anchors are plain `href="#id"` links. Smooth scrolling and the
+ *    sticky-header offset are handled in CSS (see _reset.scss), so the
+ *    navigation works identically with JavaScript disabled.
+ */
+
+import { HERO, PROFILE } from '@/data/site';
+---
+
+<section class="cnsq-hero" aria-labelledby="hero-heading">
+  <div class="cnsq-hero__inner">
+    <p class="cnsq-eyebrow cnsq-hero__eyebrow cnsq-rise" style="--cnsq-delay: 60ms">
+      {HERO.eyebrow}
+    </p>
+
+    <h1 id="hero-heading" class="cnsq-hero__title cnsq-lift" style="--cnsq-delay: 0ms">
+      {HERO.headline}
+    </h1>
+
+    <p class="cnsq-hero__standfirst cnsq-rise" style="--cnsq-delay: 180ms">
+      {HERO.standfirst}
+    </p>
+
+    <div class="cnsq-button-group cnsq-hero__actions cnsq-rise" style="--cnsq-delay: 260ms">
+      <a class="cnsq-button cnsq-button--solid" href={`#${HERO.primaryCta.id}`}>
+        {HERO.primaryCta.label}
+      </a>
+      <a class="cnsq-button cnsq-button--ghost" href={`#${HERO.secondaryCta.id}`}>
+        {HERO.secondaryCta.label}
+      </a>
+    </div>
+
+    <dl class="cnsq-hero__facts cnsq-reveal">
+      {
+        HERO.facts.map((fact) => (
+          <div class="cnsq-hero__fact">
+            <dt class="cnsq-hero__fact-term">{fact.term}</dt>
+            <dd class="cnsq-hero__fact-detail">{fact.detail}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+
+  <p class="cnsq-hero__edge" aria-hidden="true">
+    {PROFILE.yearsOfExperience} years in practice · {PROFILE.location}
+  </p>
+
+  <div class="cnsq-hero__grid" aria-hidden="true"></div>
+</section>
+
+<style lang="scss">
+  @use 'abstracts/mixins' as mix;
+  @use 'abstracts/tokens' as t;
+
+  .cnsq-hero {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    // Bottom-aligned content inside a full-height block: the headline sits
+    // low on the page, which is what gives the opening screen its
+    // editorial weight instead of the usual centred splash.
+    align-content: end;
+    min-block-size: calc(100svh - var(--csq-header-block));
+    padding-block: clamp(var(--csq-space-2xl), 14vh, var(--csq-space-3xl)) var(--csq-space-xl);
+    border-block-end: 1px solid var(--csq-line);
+
+    &__inner {
+      @include mix.shell;
+
+      position: relative;
+      z-index: 2; // above the decorative specimen grid
+      display: grid;
+      gap: var(--csq-space-md);
+      max-inline-size: none;
+    }
+
+    &__eyebrow {
+      margin: 0;
+    }
+
+    &__title {
+      font-size: var(--csq-step-6);
+      line-height: 0.96;
+      letter-spacing: -0.035em;
+      max-inline-size: 16ch;
+      margin-block-start: var(--csq-space-2xs);
+    }
+
+    &__standfirst {
+      @include mix.lead;
+    }
+
+    &__actions {
+      margin-block-start: var(--csq-space-2xs);
+    }
+
+    // Facts as a real description list, separated by hairlines.
+    &__facts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--csq-space-sm) var(--csq-space-lg);
+      margin-block-start: var(--csq-space-xl);
+      padding-block-start: var(--csq-space-md);
+      border-block-start: 1px solid var(--csq-line);
+    }
+
+    &__fact {
+      display: grid;
+      gap: var(--csq-space-3xs);
+      min-inline-size: 8rem;
+    }
+
+    &__fact-term {
+      @include mix.eyebrow;
+
+      font-size: var(--csq-step--2);
+      color: var(--csq-paper-faint);
+    }
+
+    &__fact-detail {
+      margin: 0;
+      font-size: var(--csq-step-0);
+      color: var(--csq-paper);
+    }
+
+    // Rotated edge label. Decorative duplication of the facts list, hence
+    // aria-hidden in the markup above. Only shown where there is room.
+    &__edge {
+      display: none;
+      position: absolute;
+      inset-block-end: var(--csq-space-xl);
+      inset-inline-end: calc(var(--csq-shell-pad) * 0.4);
+      z-index: 2;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-size: var(--csq-step--2);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--csq-paper-faint);
+
+      @include mix.from('lg') {
+        display: block;
+      }
+    }
+
+    // The specimen grid: 12 hairlines that fade out down the page. Pure
+    // background-image, so it is free and cannot shift layout.
+    &__grid {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.6;
+      background-image: repeating-linear-gradient(
+        to right,
+        var(--csq-line) 0 1px,
+        transparent 1px calc(100% / 6)
+      );
+      mask-image: linear-gradient(to bottom, #000 0%, transparent 72%);
+
+      @include mix.from('lg') {
+        background-image: repeating-linear-gradient(
+          to right,
+          var(--csq-line) 0 1px,
+          transparent 1px calc(100% / 12)
+        );
+      }
+    }
+  }
+</style>

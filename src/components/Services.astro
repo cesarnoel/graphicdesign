@@ -1,0 +1,148 @@
+---
+/**
+ * cnsqdesigns — services section
+ * =====================================================================
+ * ARCHITECTURAL DECISIONS
+ * ---------------------------------------------------------------------
+ * 1. The list is an <ol>, because the services are a defined sequence of
+ *    engagement types rather than a bag of features — and an ordered list
+ *    gives assistive technology "1 of 4" position information for free.
+ * 2. The visible index numerals (01, 02, …) are `aria-hidden`, because the
+ *    <ol> already conveys position. Decorative repetition is exactly what
+ *    should be hidden from the accessibility tree.
+ * 3. No icons. Icons here would be decoration with an accessibility cost
+ *    (either unlabelled images or aria-hidden noise). The hierarchy is
+ *    carried by typography and hairlines instead, which is also what keeps
+ *    the page weight down.
+ * 4. Deliverables are a nested <ul>, so each service is announced as a
+ *    group with its contents rather than as a run-on sentence.
+ */
+
+import { SERVICES } from '@/data/site';
+import SectionHeading from '@/components/SectionHeading.astro';
+---
+
+<section id="services" class="cnsq-services" aria-labelledby="services-heading">
+  <div class="cnsq-services__inner">
+    <SectionHeading
+      eyebrow="Services"
+      heading="What I take on."
+      sectionId="services"
+      level="h2"
+    >
+      <p class="cnsq-services__lead">
+        Four ways to work together, from a single mark to a full publication.
+        Each engagement includes the production files and a short handover
+        document your next designer can actually use.
+      </p>
+    </SectionHeading>
+
+    <ol class="cnsq-services__list">
+      {
+        SERVICES.map((service, index) => (
+          <li class="cnsq-services__item cnsq-reveal">
+            <p class="cnsq-services__index" aria-hidden="true">
+              {String(index + 1).padStart(2, '0')}
+            </p>
+            <h3 class="cnsq-services__title">{service.title}</h3>
+            <p class="cnsq-services__summary">{service.summary}</p>
+            <ul class="cnsq-services__deliverables">
+              {service.deliverables.map((deliverable) => (
+                <li class="cnsq-services__deliverable">{deliverable}</li>
+              ))}
+            </ul>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style lang="scss">
+  @use 'abstracts/mixins' as mix;
+
+  .cnsq-services {
+    @include mix.section-shell;
+
+    background-color: var(--csq-ink-raised);
+    border-block: 1px solid var(--csq-line);
+
+    &__inner {
+      @include mix.shell;
+    }
+
+    &__lead {
+      @include mix.lead;
+
+      margin: 0;
+    }
+
+    &__list {
+      display: grid;
+      gap: 0;
+      grid-template-columns: 1fr;
+      border-block-start: 1px solid var(--csq-line);
+    }
+
+    // Row-per-service rather than a grid of cards: it reads like an index
+    // in a design catalogue, and it never needs to be re-flowed.
+    &__item {
+      display: grid;
+      gap: var(--csq-space-2xs);
+      padding-block: var(--csq-space-lg);
+      border-block-end: 1px solid var(--csq-line);
+    }
+
+    &__index {
+      @include mix.display(var(--csq-step-1));
+
+      color: var(--csq-accent);
+    }
+
+    &__title {
+      font-size: var(--csq-step-2);
+      max-width: 22ch;
+    }
+
+    &__summary {
+      max-width: 52ch;
+    }
+
+    &__deliverables {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--csq-space-2xs) var(--csq-space-sm);
+      margin-block-start: var(--csq-space-2xs);
+      font-size: var(--csq-step--1);
+      color: var(--csq-paper-faint);
+    }
+
+    &__deliverable {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--csq-space-2xs);
+
+      &::before {
+        content: '';
+        inline-size: 0.375rem;
+        block-size: 0.375rem;
+        border: 1px solid var(--csq-accent);
+        transform: rotate(45deg);
+      }
+    }
+  }
+
+  @include mix.from('md') {
+    .cnsq-services__item {
+      // Index in a narrow first column, content in the rest: the numeral
+      // becomes a margin note instead of a stacked label.
+      grid-template-columns: 4rem minmax(0, 1fr);
+      column-gap: var(--csq-space-md);
+      align-items: baseline;
+    }
+
+    .cnsq-services__index {
+      grid-row: 1 / span 3;
+    }
+  }
+</style>

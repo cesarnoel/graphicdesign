@@ -1,0 +1,121 @@
+////
+/// cnsqdesigns — design tokens (authoring layer)
+/// =====================================================================
+/// ARCHITECTURAL DECISION — two-tier token system.
+///
+///   1. SCSS variables (this file) are the *authoring* source of truth.
+///      They are compile-time only, so they cost nothing at runtime and
+///      can be used inside mixins, maths and media queries.
+///   2. CSS custom properties (emitted once in src/styles/base/_root.scss)
+///      are the *runtime* contract that components consume via var().
+///
+/// Why both? Components are authored with `var(--csq-...)` instead of
+/// `$csq-...` so that:
+///   - tokens can be overridden at runtime (e.g. a future light theme or
+///     a `prefers-contrast: more` block) without recompiling CSS,
+///   - the palette is asserted in one place, so the brand's dark neutral
+///     palette cannot be "accidentally" redefined inside a component,
+///   - SCSS never needs to be injected into every component build
+///     (no `additionalData` hackery — see astro.config.mjs decision #4).
+///
+/// PALETTE GUARDRAIL — DO NOT DRIFT
+///   The brand is a dark theme with neutral, non-tinted grounds and a
+///   single sharp accent. Any new colour must be added here and mapped in
+///   _root.scss; components must never introduce raw hex values.
+///   Contrast ratios are annotated and must remain >= 4.5:1 for text and
+///   >= 3:1 for UI boundaries.
+////
+
+// ---------------------------------------------------------------------
+// Colour — neutral dark grounds
+// ---------------------------------------------------------------------
+$csq-ink: #0f0f0e; // page ground
+$csq-ink-deep: #08090a; // wells, lightbox backdrop
+$csq-ink-raised: #15171a; // sticky header, raised surfaces
+$csq-ink-surface: #1f2328; // cards
+$csq-line: #2b2f34; // hairlines (decorative only)
+$csq-line-strong: #565c65; // 3.1:1 vs ink-surface — usable as a UI boundary
+
+// ---------------------------------------------------------------------
+// Colour — paper (foreground)
+// ---------------------------------------------------------------------
+$csq-paper: #f5f2ec; // 17.2:1 vs ink
+$csq-paper-muted: #a6a9ae; // 8.0:1 vs ink  — body/secondary text
+$csq-paper-faint: #7c8189; // 4.6:1 vs ink  — small print only
+
+// ---------------------------------------------------------------------
+// Colour — accent (single sharp note)
+// ---------------------------------------------------------------------
+$csq-accent: #ef5333; // 5.4:1 vs ink, 5.2:1 vs ink-raised — body-safe
+$csq-accent-deep: #c8401f; // large text / decorative only
+$csq-accent-veil: rgba(239, 83, 51, 0.12); // tint fills, never a text bg
+$csq-accent-halo: rgba(239, 83, 51, 0.28); // glow behind accent elements
+
+// ---------------------------------------------------------------------
+// Type
+// ---------------------------------------------------------------------
+$csq-font-display: 'Bodoni Moda', 'Didot', 'Times New Roman', serif;
+$csq-font-body: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+
+// Modular scale, fluid between a 320px phone and a 1440px display.
+$csq-step--2: clamp(0.694rem, 0.68rem + 0.07vw, 0.75rem); // legal / labels
+$csq-step--1: clamp(0.833rem, 0.81rem + 0.12vw, 0.889rem); // captions
+$csq-step-0: clamp(1rem, 0.96rem + 0.2vw, 1.125rem); // body
+$csq-step-1: clamp(1.2rem, 1.13rem + 0.35vw, 1.42rem); // lead
+$csq-step-2: clamp(1.44rem, 1.31rem + 0.65vw, 1.8rem); // h3
+$csq-step-3: clamp(1.73rem, 1.5rem + 1.15vw, 2.28rem); // h2
+$csq-step-4: clamp(2.07rem, 1.67rem + 2vw, 2.88rem); // h1 section
+$csq-step-5: clamp(2.49rem, 1.78rem + 3.55vw, 3.64rem); // display
+$csq-step-6: clamp(2.99rem, 1.79rem + 6vw, 4.6rem); // hero
+
+$csq-leading-tight: 1.06;
+$csq-leading-snug: 1.24;
+$csq-leading-normal: 1.5;
+$csq-leading-relaxed: 1.68;
+$csq-measure: 62ch; // max line length for long-form copy
+
+// ---------------------------------------------------------------------
+// Space & layout
+// ---------------------------------------------------------------------
+$csq-space-3xs: 0.25rem;
+$csq-space-2xs: 0.5rem;
+$csq-space-xs: 0.75rem;
+$csq-space-sm: 1rem;
+$csq-space-md: 1.5rem;
+$csq-space-lg: 2.25rem;
+$csq-space-xl: 3.5rem;
+$csq-space-2xl: 5rem;
+$csq-space-3xl: 7.5rem;
+
+$csq-shell-max: 78rem; // 1248px content shell
+$csq-shell-pad: clamp(1.25rem, 5vw, 4rem);
+$csq-header-block: 4.5rem; // sticky header height, used for scroll-offset
+
+// ---------------------------------------------------------------------
+// Motion
+// ---------------------------------------------------------------------
+$csq-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+$csq-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+$csq-dur-fast: 140ms;
+$csq-dur-base: 280ms;
+$csq-dur-slow: 640ms;
+
+// ---------------------------------------------------------------------
+// Breakpoints (mobile-first: these are min-widths)
+// ---------------------------------------------------------------------
+$csq-bp-sm: 30rem; // 480px
+$csq-bp-md: 48rem; // 768px
+$csq-bp-lg: 64rem; // 1024px
+$csq-bp-xl: 90rem; // 1440px
+
+// ---------------------------------------------------------------------
+// Elevation & form
+// ---------------------------------------------------------------------
+$csq-radius-sm: 2px;
+$csq-radius-md: 4px;
+$csq-radius-lg: 8px;
+$csq-radius-pill: 999px;
+$csq-shadow-raised: 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 48px -24px rgba(0, 0, 0, 0.9);
+$csq-shadow-overlay: 0 40px 120px -40px rgba(0, 0, 0, 0.95);
+$csq-focus-width: 2px;
+$csq-focus-offset: 3px;

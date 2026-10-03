@@ -1,0 +1,121 @@
+////
+/// cnsqdesigns — shared button primitive
+/// =====================================================================
+/// Buttons appear in the header, hero, about and contact sections. Rather
+/// than re-implementing them per component (and shipping the same rules
+/// three times), they are defined once here and used as `.cnsq-button`
+/// with a variant modifier. This keeps the CSS footprint small, which is
+/// part of how the Lighthouse budget is met.
+///
+/// Accessibility notes:
+///   - `min-block-size` is 2.75rem (44px) so every control clears the
+///     WCAG 2.5.8 target-size minimum.
+///   - Variants only ever pair a paper/accent background with ink text, or
+///     accent text on ink — all combinations are >= 4.5:1.
+///   - `aria-disabled` styling is included so disabled buttons stay in the
+///     accessibility tree (unlike `disabled`, which removes them).
+////
+
+@use 'abstracts/mixins' as mix;
+@use 'abstracts/tokens' as t;
+
+.cnsq-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--csq-space-2xs);
+  min-block-size: 2.75rem;
+  padding-block: var(--csq-space-xs);
+  padding-inline: var(--csq-space-md);
+  border: 1px solid transparent;
+  border-radius: var(--csq-radius-sm);
+  font-family: var(--csq-font-body, #{t.$csq-font-body});
+  font-size: var(--csq-step--1);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-align: center;
+  transition: background-color var(--csq-dur-fast) var(--csq-ease-out),
+    border-color var(--csq-dur-fast) var(--csq-ease-out),
+    color var(--csq-dur-fast) var(--csq-ease-out),
+    transform var(--csq-dur-fast) var(--csq-ease-out);
+
+  @include mix.focus-ring;
+
+  svg {
+    inline-size: 1em;
+    block-size: 1em;
+    flex: none;
+  }
+
+  // --- solid: the primary action, paper on ink -----------------------
+  &--solid {
+    background-color: var(--csq-paper);
+    color: var(--csq-ink);
+    border-color: var(--csq-paper);
+
+    @include mix.hover-capable {
+      &:hover {
+        background-color: var(--csq-accent);
+        border-color: var(--csq-accent);
+        color: var(--csq-ink);
+        transform: translate3d(0, -1px, 0);
+      }
+    }
+  }
+
+  // --- ghost: secondary action, hairline outline ---------------------
+  &--ghost {
+    background-color: transparent;
+    color: var(--csq-paper);
+    border-color: var(--csq-line-strong);
+
+    @include mix.hover-capable {
+      &:hover {
+        border-color: var(--csq-accent);
+        color: var(--csq-accent);
+      }
+    }
+  }
+
+  // --- quiet: tertiary, text-only ------------------------------------
+  &--quiet {
+    padding-inline: 0;
+    min-block-size: auto;
+    background: none;
+    color: var(--csq-paper-muted);
+    border: 0;
+    border-radius: 0;
+    letter-spacing: 0.12em;
+
+    &::after {
+      content: '→';
+      transition: transform var(--csq-dur-base) var(--csq-ease-out);
+    }
+
+    @include mix.hover-capable {
+      &:hover {
+        color: var(--csq-accent);
+
+        &::after {
+          transform: translate3d(0.28em, 0, 0);
+        }
+      }
+    }
+  }
+
+  &[aria-disabled='true'] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+/// Groups buttons and lets them wrap sanely at 320px.
+.cnsq-button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--csq-space-sm);
+  align-items: center;
+}

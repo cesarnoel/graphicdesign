@@ -1,0 +1,206 @@
+---
+/**
+ * cnsqdesigns — sticky header
+ * =====================================================================
+ * ARCHITECTURAL DECISIONS
+ * ---------------------------------------------------------------------
+ * 1. Stickiness is `position: sticky`, not a scroll listener. There is no
+ *    JavaScript here at all: the header cannot jank, cannot flash on
+ *    hydration, and works with JS disabled.
+ * 2. Mobile navigation is a horizontally scrollable rail rather than a
+ *    hamburger menu. A hamburger needs a toggle handler (client JS), a
+ *    focus trap and an expanded/collapsed state machine to be accessible;
+ *    the rail needs none of that, keeps every destination one tap away,
+ *    and stays keyboard-navigable for free. The right-edge mask signals
+ *    "there is more to the right" without a script.
+ * 3. The thin vermilion line along the bottom is a reading-progress bar
+ *    built with CSS scroll-driven animations (`animation-timeline:
+ *    scroll()`). It is pure decoration (`aria-hidden`), costs no JS, and
+ *    is skipped entirely where the feature is unsupported.
+ * 4. The resume CTA is a plain anchor. `download` is deliberately omitted
+ *    so the PDF opens in the browser's viewer, while the visually hidden
+ *    "(PDF)" suffix tells screen-reader users what to expect.
+ */
+
+import { ABOUT, SECTIONS } from '@/data/site';
+import Wordmark from '@/components/Wordmark.astro';
+---
+
+<header class="cnsq-header">
+  <div class="cnsq-header__inner">
+    <Wordmark size="md" />
+
+    <nav class="cnsq-header__nav" aria-label="Primary">
+      <ul class="cnsq-header__list">
+        {
+          SECTIONS.map((section) => (
+            <li class="cnsq-header__item">
+              <a class="cnsq-header__link" href={`#${section.id}`}>
+                {section.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <a class="cnsq-button cnsq-button--ghost cnsq-header__cta" href={ABOUT.resume.href}>
+      Resume<span class="cnsq-visually-hidden"> (PDF)</span>
+    </a>
+  </div>
+
+  <span class="cnsq-header__progress" aria-hidden="true"></span>
+</header>
+
+<style lang="scss">
+  @use 'abstracts/mixins' as mix;
+  @use 'abstracts/tokens' as t;
+
+  .cnsq-header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 50;
+    // Opaque ground first: this is the no-support fallback, so the header
+    // can never end up transparent over scrolled content.
+    background-color: var(--csq-ink);
+    border-block-end: 1px solid var(--csq-line);
+
+    @supports (backdrop-filter: blur(1px)) {
+      background-color: color-mix(in srgb, var(--csq-ink) 86%, transparent);
+      backdrop-filter: blur(14px) saturate(140%);
+      border-block-end-color: color-mix(in srgb, var(--csq-line) 70%, transparent);
+    }
+
+    &__inner {
+      @include mix.shell;
+
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--csq-space-sm) var(--csq-space-md);
+      min-block-size: var(--csq-header-block);
+      padding-block: var(--csq-space-xs);
+    }
+
+    // The nav rail: full width on small screens (ordered to the second
+    // row), a plain inline flex list from the md breakpoint up.
+    &__nav {
+      order: 3;
+      flex: 1 0 100%;
+      // Cancels the shell padding so the rail can bleed to the screen edge,
+      // which makes it look intentionally scrollable instead of clipped.
+      margin-inline: calc(var(--csq-shell-pad) * -1);
+      padding-inline: var(--csq-shell-pad);
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      scrollbar-width: none;
+      // Signals "more content to the right" without any script.
+      mask-image: linear-gradient(to right, #000 88%, transparent 100%);
+
+      @include mix.from('md') {
+        order: 2;
+        flex: 1 1 auto;
+        margin-inline: 0;
+        padding-inline: 0;
+        overflow: visible;
+        mask-image: none;
+      }
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    &__list {
+      display: flex;
+      align-items: center;
+      gap: var(--csq-space-md);
+      white-space: nowrap;
+    }
+
+    &__link {
+      @include mix.focus-ring;
+
+      display: inline-block;
+      padding-block: var(--csq-space-2xs);
+      font-size: var(--csq-step--1);
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--csq-paper-muted);
+      transition: color var(--csq-dur-fast) var(--csq-ease-out);
+
+      // Underline grows from the left on hover — the same gesture as the
+      // inline prose links, so the header reads as part of one system.
+      &::after {
+        content: '';
+        display: block;
+        block-size: 1px;
+        inline-size: 100%;
+        margin-block-start: 0.35rem;
+        background-color: var(--csq-accent);
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform var(--csq-dur-base) var(--csq-ease-out);
+      }
+
+      @include mix.hover-capable {
+        &:hover {
+          color: var(--csq-paper);
+
+          &::after {
+            transform: scaleX(1);
+          }
+        }
+      }
+    }
+
+    &__cta {
+      order: 2;
+      margin-inline-start: auto;
+      padding-inline: var(--csq-space-sm);
+
+      @include mix.from('md') {
+        order: 3;
+        margin-inline-start: 0;
+      }
+    }
+
+    &__progress {
+      position: absolute;
+      inset-block-end: -1px;
+      inset-inline: 0;
+      block-size: 2px;
+      background-color: var(--csq-accent);
+      transform: scaleX(0);
+      transform-origin: left center;
+    }
+  }
+
+  // Reading progress: compositor-driven, zero JS, silently skipped when
+  // scroll timelines are unavailable.
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .cnsq-header__progress {
+        animation: cnsq-header-progress linear both;
+        animation-timeline: scroll();
+      }
+    }
+  }
+
+  @keyframes cnsq-header-progress {
+    from {
+      transform: scaleX(0);
+    }
+
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @include mix.reduced-motion {
+    .cnsq-header__link::after {
+      transition: none;
+    }
+  }
+</style>

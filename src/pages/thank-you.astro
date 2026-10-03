@@ -1,0 +1,82 @@
+---
+/**
+ * cnsqdesigns — thank-you page
+ * =====================================================================
+ * ARCHITECTURAL DECISIONS
+ * ---------------------------------------------------------------------
+ * 1. Netlify Forms POSTs a normal HTML form and then redirects here (see
+ *    the `action` on the form in ContactInfo.astro). Using a real page
+ *    instead of Netlify's inline success message means:
+ *      - the confirmation is styled and branded like the rest of the site,
+ *      - it works with JavaScript disabled, because nothing about the flow
+ *        depends on the client,
+ *      - the visitor has a normal page to bookmark, share or go back from.
+ * 2. `noindex` — a confirmation page has no search value and should never
+ *    appear in results.
+ * 3. No query-string data from the submission is echoed back into the page.
+ *    Reflecting user input into HTML is how reflected XSS happens, and a
+ *    static page has no reason to take that risk.
+ */
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { CONTACT, SITE } from '@/data/site';
+---
+
+<BaseLayout
+  title={`Brief received — ${SITE.name}`}
+  description="Your brief has been received. You will get a reply with fit, budget range and the next start date."
+  path="/thank-you"
+  noindex
+>
+  <section class="cnsq-thanks" aria-labelledby="thanks-heading">
+    <div class="cnsq-thanks__inner">
+      <p class="cnsq-eyebrow">Brief received</p>
+      <h1 class="cnsq-thanks__title" id="thanks-heading">Thank you — it is in the queue.</h1>
+      <p class="cnsq-thanks__lead">
+        You will get a reply covering fit, a budget range and the next available
+        start date. If it is urgent, email directly and mention the word urgent
+        in the subject line.
+      </p>
+
+      <div class="cnsq-button-group cnsq-thanks__actions">
+        <a class="cnsq-button cnsq-button--solid" href={`mailto:${CONTACT.email}`}>
+          Email {CONTACT.email}
+        </a>
+        <a class="cnsq-button cnsq-button--ghost" href="/#gallery">Back to the work</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style lang="scss">
+  @use 'abstracts/mixins' as mix;
+
+  .cnsq-thanks {
+    @include mix.section-shell;
+
+    display: grid;
+    align-content: center;
+    min-block-size: 60svh;
+
+    &__inner {
+      @include mix.shell;
+
+      display: grid;
+      gap: var(--csq-space-sm);
+      max-inline-size: 44rem;
+    }
+
+    &__title {
+      font-size: var(--csq-step-4);
+      max-inline-size: 24ch;
+    }
+
+    &__lead {
+      @include mix.lead;
+    }
+
+    &__actions {
+      margin-block-start: var(--csq-space-sm);
+    }
+  }
+</style>

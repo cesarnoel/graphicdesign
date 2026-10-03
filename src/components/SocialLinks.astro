@@ -1,0 +1,109 @@
+---
+/**
+ * cnsqdesigns — social links
+ * =====================================================================
+ * ARCHITECTURAL DECISIONS
+ * ---------------------------------------------------------------------
+ * 1. These are typographic links, not brand icon glyphs. Redrawing
+ *    Instagram/Facebook/LinkedIn/Behance marks by hand produces
+ *    off-model, unlicensed logos; and text is the more honest, more
+ *    accessible choice. Each link keeps the platform's real name in the
+ *    accessible name, so nothing is lost for screen-reader users.
+ * 2. The visual identity comes from the site's own vocabulary instead: a
+ *    small registration diamond (the same motif as the wordmark mark and
+ *    the decorative corners) that rotates and turns vermilion on hover.
+ * 3. `target="_blank"` is paired with `rel="noopener noreferrer"` and a
+ *    visually hidden "(opens in a new tab)" hint, which is the WCAG-safe
+ *    way to open a link in a new context.
+ */
+
+import { CONTACT } from '@/data/site';
+
+export interface Props {
+  /** Optional layout hook (e.g. the footer’s `cnsq-footer__social`). */
+  readonly class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<ul class:list={['cnsq-social', className]}>
+  {
+    CONTACT.socials.map((social) => (
+      <li class="cnsq-social__item">
+        <a
+          class="cnsq-social__link"
+          href={social.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`${social.label} (opens in a new tab)`}
+        >
+          <span class="cnsq-social__mark" aria-hidden="true" />
+          <span class="cnsq-social__label">{social.platform}</span>
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style lang="scss">
+  @use 'abstracts/mixins' as mix;
+
+  .cnsq-social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--csq-space-xs) var(--csq-space-md);
+
+    &__link {
+      @include mix.focus-ring;
+
+      display: inline-flex;
+      align-items: center;
+      gap: var(--csq-space-2xs);
+      // 44px target without visual bulk.
+      min-block-size: 2.75rem;
+      font-size: var(--csq-step--1);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--csq-paper-muted);
+      transition: color var(--csq-dur-fast) var(--csq-ease-out);
+
+      @include mix.hover-capable {
+        &:hover {
+          color: var(--csq-paper);
+
+          .cnsq-social__mark {
+            background-color: var(--csq-accent);
+            transform: rotate(45deg);
+          }
+        }
+      }
+    }
+
+    // Registration diamond, 8x8, so it never looks like a favicon.
+    &__mark {
+      inline-size: 0.5rem;
+      block-size: 0.5rem;
+      background-color: var(--csq-line-strong);
+      transition: background-color var(--csq-dur-base) var(--csq-ease-out),
+        transform var(--csq-dur-base) var(--csq-ease-out);
+    }
+
+    &__label {
+      // Kept in the DOM (not a pseudo-element) so the text stays
+      // selectable and the accessible name stays complete.
+      display: inline-block;
+    }
+  }
+
+  @include mix.reduced-motion {
+    .cnsq-social__link,
+    .cnsq-social__mark {
+      transition: none;
+    }
+
+    .cnsq-social__link:hover .cnsq-social__mark {
+      transform: none;
+    }
+  }
+</style>

@@ -1,0 +1,305 @@
+---
+/**
+ * cnsqdesigns — contact section
+ * =====================================================================
+ * ARCHITECTURAL DECISIONS
+ * ---------------------------------------------------------------------
+ * 1. NO JAVASCRIPT FORM. This is a plain HTML form handled by Netlify
+ *    Forms: Netlify's build scans the generated HTML for the
+ *    `data-netlify` attribute, registers the form and stores submissions.
+ *    That means no server code, no third-party form service, no CAPTCHA
+ *    vendor and no client validation bundle — and, critically for this
+ *    brief, the form still works with JavaScript disabled.
+ * 2. Spam handling is a honeypot field rather than a CAPTCHA: a hidden
+ *    input that humans never see and bots fill in. It adds no third-party
+ *    request and cannot fail an accessibility audit.
+ * 3. The form POSTs to a real /thank-you page instead of relying on
+ *    Netlify's inline success message, so the confirmation is a proper page
+ *    with the site's own header and footer — and the flow behaves
+ *    identically without JavaScript.
+ * 4. Contact details are a <dl>: "term + description" is exactly the
+ *    semantics of labelled contact data, and every action-able value
+ *    (email, phone) is a real link.
+ * 5. Every input has a visible <label> with browser autofill enabled via
+ *    `autocomplete` — faster and less error-prone than custom validation.
+ */
+
+import { CONTACT } from '@/data/site';
+import SectionHeading from '@/components/SectionHeading.astro';
+import SocialLinks from '@/components/SocialLinks.astro';
+
+/** Matches the `netlify-honeypot` attribute below. */
+const honeypotField = 'cnsq-bot-field';
+---
+
+<section id="contact" class="cnsq-contact" aria-labelledby="contact-heading">
+  <div class="cnsq-contact__inner">
+    <SectionHeading
+      eyebrow={CONTACT.eyebrow}
+      heading={CONTACT.heading}
+      sectionId="contact"
+      level="h2"
+    >
+      <p class="cnsq-contact__standfirst">{CONTACT.standfirst}</p>
+    </SectionHeading>
+
+    <div class="cnsq-contact__grid">
+      <div class="cnsq-contact__details">
+        <dl class="cnsq-contact__list">
+          <div class="cnsq-contact__row">
+            <dt class="cnsq-contact__term">Email</dt>
+            <dd class="cnsq-contact__value">
+              <a class="cnsq-link" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+            </dd>
+          </div>
+          <div class="cnsq-contact__row">
+            <dt class="cnsq-contact__term">Phone</dt>
+            <dd class="cnsq-contact__value">
+              <a class="cnsq-link" href={`tel:${CONTACT.phoneHref}`}>{CONTACT.phone}</a>
+            </dd>
+          </div>
+          <div class="cnsq-contact__row">
+            <dt class="cnsq-contact__term">Studio</dt>
+            <dd class="cnsq-contact__value">{CONTACT.location}</dd>
+          </div>
+          <div class="cnsq-contact__row">
+            <dt class="cnsq-contact__term">Hours</dt>
+            <dd class="cnsq-contact__value">{CONTACT.hours}</dd>
+          </div>
+        </dl>
+
+        <SocialLinks class="cnsq-contact__social" />
+      </div>
+
+      <form
+        class="cnsq-contact__form"
+        name={CONTACT.formName}
+        method="POST"
+        action="/thank-you/"
+        data-netlify="true"
+        netlify-honeypot={honeypotField}
+      >
+        {
+          /* Netlify matches a submission to the registered form through this
+             hidden field, so it must echo the form's name exactly. */
+        }
+        <input type="hidden" name="form-name" value={CONTACT.formName} />
+
+        {
+          /* Honeypot — aria-hidden and tabindex="-1" keep it out of both the
+             accessibility tree and the tab order. */
+        }
+        <p class="cnsq-contact__honeypot" aria-hidden="true">
+          <label for={honeypotField}>Leave this field empty</label>
+          <input
+            id={honeypotField}
+            type="text"
+            name={honeypotField}
+            tabindex="-1"
+            autocomplete="off"
+          />
+        </p>
+
+        <div class="cnsq-contact__field">
+          <label class="cnsq-contact__label" for="cnsq-name">Name</label>
+          <input
+            class="cnsq-contact__input"
+            id="cnsq-name"
+            name="name"
+            type="text"
+            autocomplete="name"
+            required
+          />
+        </div>
+
+        <div class="cnsq-contact__field">
+          <label class="cnsq-contact__label" for="cnsq-email">Email</label>
+          <input
+            class="cnsq-contact__input"
+            id="cnsq-email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+          />
+        </div>
+
+        <div class="cnsq-contact__field">
+          <label class="cnsq-contact__label" for="cnsq-project">Project type</label>
+          <select class="cnsq-contact__input" id="cnsq-project" name="project-type">
+            <option value="brand-identity">Brand identity</option>
+            <option value="print-editorial">Print &amp; editorial</option>
+            <option value="ebook-digital">E-book &amp; digital publishing</option>
+            <option value="web-social">Web &amp; social graphics</option>
+            <option value="something-else">Something else</option>
+          </select>
+        </div>
+
+        <div class="cnsq-contact__field">
+          <label class="cnsq-contact__label" for="cnsq-message">Brief</label>
+          <textarea
+            class="cnsq-contact__input cnsq-contact__input--area"
+            id="cnsq-message"
+            name="message"
+            rows="5"
+            placeholder="Scope, timeline and any assets you already have."
+            required></textarea>
+        </div>
+
+        <button class="cnsq-button cnsq-button--solid cnsq-contact__submit" type="submit">
+          Send the brief
+        </button>
+
+        <p class="cnsq-contact__note">
+          Submissions are stored by Netlify Forms and are never passed to a
+          third-party marketing platform.
+        </p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<style lang="scss">
+  @use 'abstracts/mixins' as mix;
+
+  .cnsq-contact {
+    @include mix.section-shell;
+
+    &__inner {
+      @include mix.shell;
+    }
+
+    &__standfirst {
+      @include mix.lead;
+
+      margin: 0;
+    }
+
+    &__grid {
+      display: grid;
+      gap: var(--csq-space-xl);
+    }
+
+    &__row {
+      display: grid;
+      gap: var(--csq-space-3xs);
+      padding-block: var(--csq-space-sm);
+      border-block-end: 1px solid var(--csq-line);
+    }
+
+    &__term {
+      @include mix.eyebrow;
+
+      font-size: var(--csq-step--2);
+      color: var(--csq-paper-faint);
+    }
+
+    &__value {
+      margin: 0;
+      font-size: var(--csq-step-0);
+    }
+
+    &__social {
+      margin-block-start: var(--csq-space-lg);
+    }
+
+    &__form {
+      display: grid;
+      gap: var(--csq-space-sm);
+      align-content: start;
+      padding: var(--csq-space-md);
+      background-color: var(--csq-ink-surface);
+      border: 1px solid var(--csq-line);
+      border-radius: var(--csq-radius-md);
+      box-shadow: var(--csq-shadow-raised);
+    }
+
+    // Off-screen rather than display:none: some bots skip hidden inputs,
+    // and this also keeps the field out of the layout entirely.
+    &__honeypot {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+
+    &__field {
+      display: grid;
+      gap: var(--csq-space-3xs);
+    }
+
+    &__label {
+      @include mix.eyebrow;
+
+      font-size: var(--csq-step--2);
+      color: var(--csq-paper-muted);
+    }
+
+    &__input {
+      inline-size: 100%;
+      min-block-size: 2.75rem;
+      padding: var(--csq-space-xs) var(--csq-space-sm);
+      background-color: var(--csq-ink);
+      color: var(--csq-paper);
+      border: 1px solid var(--csq-line-strong);
+      border-radius: var(--csq-radius-sm);
+      font-size: var(--csq-step-0);
+      transition: border-color var(--csq-dur-fast) var(--csq-ease-out);
+
+      &::placeholder {
+        color: var(--csq-paper-faint);
+      }
+
+      @include mix.hover-capable {
+        &:hover {
+          border-color: var(--csq-paper-muted);
+        }
+      }
+
+      &:focus-visible {
+        border-color: var(--csq-accent);
+      }
+
+      // Native validation feedback, styled to match the design instead of
+      // arriving as a browser default red box.
+      &:user-invalid {
+        border-color: var(--csq-accent);
+      }
+
+      &--area {
+        min-block-size: 8rem;
+        resize: vertical;
+      }
+    }
+
+    &__submit {
+      justify-self: start;
+      margin-block-start: var(--csq-space-2xs);
+    }
+
+    &__note {
+      max-inline-size: 46ch;
+      font-size: var(--csq-step--2);
+      color: var(--csq-paper-faint);
+    }
+  }
+
+  @include mix.from('md') {
+    .cnsq-contact__grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: var(--csq-space-2xl);
+      align-items: start;
+    }
+
+    .cnsq-contact__form {
+      padding: var(--csq-space-lg);
+    }
+  }
+
+  @include mix.reduced-motion {
+    .cnsq-contact__input {
+      transition: none;
+    }
+  }
+</style>

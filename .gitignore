@@ -1,0 +1,29 @@
+# cnsqdesigns — ignore rules
+# ---------------------------------------------------------------------
+# Astro build output and cache
+dist/
+.astro/
+node_modules/
+
+# Netlify local state
+.netlify/
+
+# Environment files — never commit secrets, even on a static site.
+.env
+.env.*
+!.env.example
+
+# Logs (including the detached install logs used during this scaffold)
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Astro's generated type declarations are produced by `astro sync`
+.astro/types.d.ts

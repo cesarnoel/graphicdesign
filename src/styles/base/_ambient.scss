@@ -1,0 +1,61 @@
+////
+/// cnsqdesigns — ambient background layer
+/// =====================================================================
+/// The page is a large area of near-black. Flat ink reads as "unfinished
+/// template"; these two layers give it the tooth of a printed sheet
+/// without adding a single image request or any JavaScript.
+///
+///   1. body::before — a very soft accent wash and a faint diagonal
+///      hairline field (repeating-linear-gradient) so the ground has
+///      direction and depth rather than being a dead flat rectangle.
+///   2. body::after  — a 4%-opacity fractal-noise grain generated as an
+///      inline SVG data URI. Inline means no HTTP request; 4% means it
+///      never harms text contrast (it is well below the 4.5:1 budget).
+///
+/// Both are `pointer-events: none` and sit behind/over content without
+/// intercepting anything, and both are decorative by definition, so they
+/// are declared in CSS rather than in the accessible DOM tree.
+////
+
+@use 'abstracts/mixins' as mix;
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(
+      60rem 40rem at 78% -10%,
+      color-mix(in srgb, var(--csq-accent) 7%, transparent),
+      transparent 70%
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--csq-line) 45%, transparent) 0 1px,
+      transparent 1px 14px
+    );
+  // The hatch is atmosphere, never a legibility risk.
+  opacity: 0.5;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+// Grain and gradient washes are exactly the kind of low-contrast texture
+// that bothers some users; drop them when the OS asks for less motion or
+// more contrast.
+@media (prefers-contrast: more) {
+  body::before,
+  body::after {
+    display: none;
+  }
+}

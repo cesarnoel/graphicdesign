@@ -1,0 +1,41 @@
+---
+/**
+ * cnsqdesigns — home page
+ * =====================================================================
+ * ARCHITECTURAL DECISIONS
+ * ---------------------------------------------------------------------
+ * 1. This file is composition only: it imports sections and passes data.
+ *    There is no copy, no styling and no logic here, which is what makes
+ *    the page trivially reorderable and reviewable against the brief.
+ * 2. SINGLE <h1> RULE — the hero owns the page's only h1. Every section
+ *    heading is an h2 emitted through SectionHeading.astro, and service
+ *    cards inside a section are h3s, so the heading outline never skips a
+ *    level (a WCAG 1.3.1 requirement).
+ * 3. The 404 route and this page share BaseLayout, so the SEO head, the
+ *    landmarks, the skip link and the fonts are declared once for the
+ *    whole site.
+ * 4. No analytics, no tag manager, no cookie banner, no third-party
+ *    scripts — there is nothing to consent to, which is both a Lighthouse
+ *    and a privacy win.
+ */
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import AboutSection from '@/components/AboutSection.astro';
+import Gallery from '@/components/Gallery.astro';
+import Services from '@/components/Services.astro';
+import ContactInfo from '@/components/ContactInfo.astro';
+import { SITE } from '@/data/site';
+---
+
+<BaseLayout
+  title={`${SITE.name} — Graphic designer in Davao City`}
+  description={SITE.description}
+  path="/"
+>
+  <Hero />
+  <AboutSection />
+  <Gallery />
+  <Services />
+  <ContactInfo />
+</BaseLayout>

@@ -1,0 +1,102 @@
+---
+/**
+ * cnsqdesigns — brand wordmark
+ * =====================================================================
+ * ARCHITECTURAL DECISIONS
+ * ---------------------------------------------------------------------
+ * 1. The mark is inline SVG, not a file. It costs no HTTP request, cannot
+ *    cause a layout shift (fixed 24x24 box), scales losslessly, and
+ *    inherits `currentColor` so it works on the ink, paper and accent
+ *    surfaces without a second asset.
+ * 2. The wordmark is real text, not artwork. It stays selectable,
+ *    translatable, searchable and reflowable, and screen readers get the
+ *    brand name from the link's `aria-label`.
+ * 3. NAMING GUARDRAIL — `text-transform: lowercase` is applied in CSS so
+ *    the brand can never render as "CnsqDesigns" / "CNSQDESIGNS" even if
+ *    someone types it that way in content. The brand is always
+ *    lowercase: cnsqdesigns.
+ * 4. The glyph is a registration diamond in a hairline square — the same
+ *    print-alignment motif used for the decorative corners in
+ *    src/components/RegistrationMarks.astro, which gives the identity a
+ *    consistent vocabulary instead of a generic logo blob.
+ */
+
+import { BRAND_SLUG } from '@/data/site';
+
+export interface Props {
+  /** `sm` for the footer, `md` for the sticky header. */
+  readonly size?: 'sm' | 'md';
+}
+
+const { size = 'md' } = Astro.props;
+---
+
+<a class:list={['cnsq-wordmark', `cnsq-wordmark--${size}`]} href="/" aria-label={`${BRAND_SLUG} — back to top`}>
+  <svg
+    class="cnsq-wordmark__mark"
+    viewBox="0 0 24 24"
+    width="24"
+    height="24"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <rect x="0.75" y="0.75" width="22.5" height="22.5" fill="none" stroke="currentColor" stroke-width="1.5"></rect>
+    <path d="M12 5.25 18.75 12 12 18.75 5.25 12Z" fill="var(--csq-accent)"></path>
+  </svg>
+  <span class="cnsq-wordmark__text">{BRAND_SLUG}</span>
+</a>
+
+<style lang="scss">
+  @use 'abstracts/mixins' as mix;
+  @use 'abstracts/tokens' as t;
+
+  .cnsq-wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--csq-space-2xs);
+    color: var(--csq-paper);
+
+    @include mix.focus-ring;
+
+    // Enforces the lowercase brand convention at the presentation layer.
+    &__text {
+      font-family: var(--csq-font-display, #{t.$csq-font-display});
+      font-weight: 500;
+      letter-spacing: -0.015em;
+      line-height: 1;
+      text-transform: lowercase;
+    }
+
+    &__mark {
+      color: var(--csq-line-strong);
+      transition: transform var(--csq-dur-base) var(--csq-ease-out),
+        color var(--csq-dur-base) var(--csq-ease-out);
+    }
+
+    @include mix.hover-capable {
+      &:hover &__mark {
+        color: var(--csq-paper);
+        transform: rotate(45deg);
+      }
+    }
+
+    @include mix.reduced-motion {
+      &__mark {
+        transition: none;
+      }
+    }
+
+    &--sm &__text {
+      font-size: var(--csq-step-1);
+    }
+
+    &--md &__text {
+      font-size: var(--csq-step-2);
+    }
+
+    &--sm &__mark {
+      inline-size: 1rem;
+      block-size: 1rem;
+    }
+  }
+</style>

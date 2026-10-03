@@ -1,0 +1,125 @@
+---
+/**
+ * cnsqdesigns — SEO head
+ * =====================================================================
+ * ARCHITECTURAL DECISIONS
+ * ---------------------------------------------------------------------
+ * 1. One component owns every <head> tag that is not a stylesheet or a
+ *    font. Pages pass content in; nothing about their markup needs to
+ *    change to be discoverable.
+ * 2. Canonical + Open Graph URLs are derived from `Astro.site` (which
+ *    comes from SITE.url in src/data/site.ts), so the domain is declared
+ *    once for the whole project — canonical tags, og:url, sitemap.xml and
+ *    robots.txt can never disagree.
+ * 3. Structured data (JSON-LD) is generated from the same typed content
+ *    as the visible page, so the schema cannot drift from the copy.
+ * 4. No third-party analytics, tag manager or font host is referenced, so
+ *    there is no cookie banner to add and no external request in the
+ *    critical path.
+ */
+
+import { PROFILE, SITE } from '@/data/site';
+
+export interface Props {
+  /** Full document title. Keep the brand suffix for consistent SERP branding. */
+  readonly title: string;
+  /** Meta description, <= ~155 characters. */
+  readonly description: string;
+  /** Route used for the canonical URL, e.g. '/' or '/404'. */
+  readonly path?: string;
+  /** Absolute path to the OG image. Defaults to the brand card. */
+  readonly image?: string;
+  readonly imageAlt?: string;
+  readonly ogType?: 'website' | 'profile' | 'article';
+  /** Set for utility pages that must stay out of the index. */
+  readonly noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  path = '/',
+  image = SITE.ogImage,
+  imageAlt = SITE.ogImageAlt,
+  ogType = 'website',
+  noindex = false,
+} = Astro.props;
+
+const canonical = new URL(path, SITE.url).href;
+const ogImageUrl = new URL(image, SITE.url).href;
+
+/**
+ * JSON-LD graph. `Person` + `WebSite` are emitted on every page because
+ * both describe the site as a whole; `ProfessionalService` gives search
+ * engines the location and the service list that the brief asked for.
+ */
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Person',
+      '@id': `${SITE.url}/#person`,
+      name: PROFILE.name,
+      jobTitle: PROFILE.jobTitle,
+      url: SITE.url,
+      email: `mailto:hello@${SITE.name}.com`,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Davao City',
+        addressCountry: 'PH',
+      },
+      sameAs: PROFILE.sameAs,
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE.url}/#website`,
+      url: SITE.url,
+      name: SITE.name,
+      description: SITE.description,
+      inLanguage: SITE.lang,
+      publisher: { '@id': `${SITE.url}/#person` },
+    },
+    {
+      '@type': 'ProfessionalService',
+      '@id': `${SITE.url}/#studio`,
+      name: SITE.name,
+      description: SITE.description,
+      url: SITE.url,
+      image: ogImageUrl,
+      areaServed: 'Davao City, Philippines',
+      founder: { '@id': `${SITE.url}/#person` },
+    },
+  ],
+};
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+<meta name="keywords" content={SITE.keywords.join(', ')} />
+{noindex && <meta name="robots" content="noindex, follow" />}
+
+<!-- Open Graph -->
+<meta property="og:type" content={ogType} />
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:locale" content={SITE.locale} />
+<meta property="og:image" content={ogImageUrl} />
+<meta property="og:image:alt" content={imageAlt} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+
+<!-- Twitter/X -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImageUrl} />
+<meta name="twitter:image:alt" content={imageAlt} />
+
+<!-- Browser chrome on mobile, matched to the ink ground so the address bar
+     blends with the page instead of flashing white. -->
+<meta name="theme-color" content="#0f0f0e" />
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />

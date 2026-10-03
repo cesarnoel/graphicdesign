@@ -1,0 +1,82 @@
+---
+/**
+ * cnsqdesigns — base layout
+ * =====================================================================
+ * ARCHITECTURAL DECISIONS
+ * ---------------------------------------------------------------------
+ * 1. This is the only place <html>, <head> and the landmarks are declared.
+ *    Every page inherits the same semantics (banner / main / contentinfo),
+ *    so accessibility structure cannot be forgotten on a new page.
+ * 2. Fonts are loaded with Astro's <Font /> component. `preload` removes
+ *    the font from the request waterfall (good LCP), and because the fonts
+ *    are emitted into /_astro/fonts with hashed names they can be cached
+ *    immutably — see the [[headers]] block in netlify.toml.
+ * 3. The global stylesheet is imported here, once. Components keep their
+ *    own styles in their own <style> blocks so Astro can inline the
+ *    critical ones and scope the rest.
+ * 4. The skip link is the first focusable element in the document. It is
+ *    visible only when focused, and `#main` carries tabindex="-1" so the
+ *    focus move works reliably in every browser.
+ * 5. The grain/atmosphere layer lives in CSS (src/styles/base/_ambient.scss
+ *    via global.scss) as a `body::after` overlay: it costs no image
+ *    request, cannot block rendering and is ignored by assistive tech.
+ */
+
+import { Font } from 'astro:assets';
+
+import Seo from '@/components/Seo.astro';
+import StickyHeader from '@/components/StickyHeader.astro';
+import Footer from '@/components/Footer.astro';
+import { SITE } from '@/data/site';
+import '@/styles/global.scss';
+
+export interface Props {
+  /** Full document title. Falls back to the branded default. */
+  readonly title?: string;
+  readonly description?: string;
+  /** Route used for the canonical URL. Defaults to the current path. */
+  readonly path?: string;
+  /** Keep utility routes (404) out of the search index. */
+  readonly noindex?: boolean;
+}
+
+const {
+  title = `${SITE.name} — Graphic designer in Davao City`,
+  description = SITE.description,
+  path = Astro.url.pathname,
+  noindex = false,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang={SITE.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+
+    <!-- Self-hosted, preloaded, metric-matched fallbacks. Order matters:
+         the Font component must render before <Seo /> so its @font-face
+         rules are not pushed behind the meta tags. -->
+    <Font cssVariable="--csq-font-display" preload />
+    <Font cssVariable="--csq-font-body" preload />
+
+    <Seo title={title} description={description} path={path} noindex={noindex} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/cnsqdesigns-icon-180.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+  </head>
+
+  <body>
+    <a class="cnsq-skip-link" href="#main">Skip to main content</a>
+
+    <StickyHeader />
+
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+
+    <Footer />
+  </body>
+</html>

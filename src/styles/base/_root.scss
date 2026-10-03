@@ -1,0 +1,106 @@
+////
+/// cnsqdesigns — runtime token bridge
+/// =====================================================================
+/// SCSS variables are compile-time only. This file publishes the subset
+/// that components are allowed to consume, exactly once, as CSS custom
+/// properties on :root.
+///
+/// ARCHITECTURAL NOTE — DO NOT declare `--csq-font-display` or
+/// `--csq-font-body` here. Astro's Fonts API owns those two variables
+/// (see the `fonts` array in astro.config.mjs) and writes them together
+/// with metric-matched fallback metrics. Redeclaring them in CSS would
+/// override the metric overrides and reintroduce the layout shift the
+/// integration exists to prevent.
+///
+/// Anything a component needs at runtime must be added here; anything
+/// that only matters at compile time stays in abstracts/_tokens.scss.
+////
+
+@use 'abstracts/tokens' as t;
+
+:root {
+  // Declares the whole page as dark so form controls, scrollbars and
+  // default UI render in their dark variant without extra authoring.
+  color-scheme: dark;
+
+  // --- grounds -------------------------------------------------------
+  --csq-ink: #{t.$csq-ink};
+  --csq-ink-deep: #{t.$csq-ink-deep};
+  --csq-ink-raised: #{t.$csq-ink-raised};
+  --csq-ink-surface: #{t.$csq-ink-surface};
+  --csq-line: #{t.$csq-line};
+  --csq-line-strong: #{t.$csq-line-strong};
+
+  // --- paper ---------------------------------------------------------
+  --csq-paper: #{t.$csq-paper};
+  --csq-paper-muted: #{t.$csq-paper-muted};
+  --csq-paper-faint: #{t.$csq-paper-faint};
+
+  // --- accent --------------------------------------------------------
+  --csq-accent: #{t.$csq-accent};
+  --csq-accent-deep: #{t.$csq-accent-deep};
+  --csq-accent-veil: #{t.$csq-accent-veil};
+  --csq-accent-halo: #{t.$csq-accent-halo};
+
+  // --- type scale ----------------------------------------------------
+  --csq-step--2: #{t.$csq-step--2};
+  --csq-step--1: #{t.$csq-step--1};
+  --csq-step-0: #{t.$csq-step-0};
+  --csq-step-1: #{t.$csq-step-1};
+  --csq-step-2: #{t.$csq-step-2};
+  --csq-step-3: #{t.$csq-step-3};
+  --csq-step-4: #{t.$csq-step-4};
+  --csq-step-5: #{t.$csq-step-5};
+  --csq-step-6: #{t.$csq-step-6};
+
+  --csq-leading-tight: #{t.$csq-leading-tight};
+  --csq-leading-snug: #{t.$csq-leading-snug};
+  --csq-leading-normal: #{t.$csq-leading-normal};
+  --csq-leading-relaxed: #{t.$csq-leading-relaxed};
+  --csq-measure: #{t.$csq-measure};
+
+  // --- space ---------------------------------------------------------
+  --csq-space-3xs: #{t.$csq-space-3xs};
+  --csq-space-2xs: #{t.$csq-space-2xs};
+  --csq-space-xs: #{t.$csq-space-xs};
+  --csq-space-sm: #{t.$csq-space-sm};
+  --csq-space-md: #{t.$csq-space-md};
+  --csq-space-lg: #{t.$csq-space-lg};
+  --csq-space-xl: #{t.$csq-space-xl};
+  --csq-space-2xl: #{t.$csq-space-2xl};
+  --csq-space-3xl: #{t.$csq-space-3xl};
+
+  // --- layout --------------------------------------------------------
+  --csq-shell-pad: #{t.$csq-shell-pad};
+  --csq-header-block: #{t.$csq-header-block};
+
+  // --- form ----------------------------------------------------------
+  --csq-radius-sm: #{t.$csq-radius-sm};
+  --csq-radius-md: #{t.$csq-radius-md};
+  --csq-radius-lg: #{t.$csq-radius-lg};
+  --csq-radius-pill: #{t.$csq-radius-pill};
+  --csq-shadow-raised: #{t.$csq-shadow-raised};
+  --csq-shadow-overlay: #{t.$csq-shadow-overlay};
+
+  // --- motion --------------------------------------------------------
+  --csq-ease-out: #{t.$csq-ease-out};
+  --csq-ease-in-out: #{t.$csq-ease-in-out};
+  --csq-dur-fast: #{t.$csq-dur-fast};
+  --csq-dur-base: #{t.$csq-dur-base};
+  --csq-dur-slow: #{t.$csq-dur-slow};
+
+  // --- focus ---------------------------------------------------------
+  --csq-focus-width: #{t.$csq-focus-width};
+  --csq-focus-offset: #{t.$csq-focus-offset};
+}
+
+/// Users who ask for more contrast get a brighter paper and a stronger
+/// accent, without touching a single component stylesheet.
+@media (prefers-contrast: more) {
+  :root {
+    --csq-paper-muted: #{t.$csq-paper};
+    --csq-paper-faint: #{t.$csq-paper-muted};
+    --csq-line: #{t.$csq-line-strong};
+    --csq-accent: #ff6a4a;
+  }
+}

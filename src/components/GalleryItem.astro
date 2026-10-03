@@ -1,0 +1,230 @@
+---
+/**
+ * cnsqdesigns — gallery item
+ * =====================================================================
+ * ARCHITECTURAL DECISIONS
+ * ---------------------------------------------------------------------
+ * 1. This component is a STATIC Astro component, not a React island. The
+ *    thumbnail markup is server-rendered plain HTML, so the grid paints
+ *    without waiting for any JavaScript and remains usable with JS off.
+ * 2. PROGRESSIVE ENHANCEMENT — the whole item is wrapped in a real anchor
+ *    whose `href` is the lightbox-sized image. With JavaScript disabled the
+ *    "lightbox" degrades to "open the full image", which is a perfectly
+ *    good gallery. When the lightbox island is hydrated (see Lightbox.tsx)
+ *    it intercepts the click and shows a <dialog> instead. One anchor, two
+ *    behaviours, no feature detection in the markup.
+ * 3. The anchor target is NOT the original master file. `getImage()` runs
+ *    at build time to produce a purpose-built 1400px WebP for the
+ *    lightbox, so a client's 8MB CMYK master can never be downloaded by a
+ *    visitor — this is what keeps the page inside its performance budget.
+ * 4. `<Picture>` emits AVIF → WebP → JPEG sources with a correct `srcset`
+ *    and `sizes`, plus intrinsic width/height, so images are both small and
+ *    shift-free (CLS 0).
+ * 5. Alt text is required by Astro's image components and comes from the
+ *    manifest, not from the template — which is why every entry has one.
+ * 6. The `data-cnsq-lightbox-*` attributes are the contract with
+ *    Lightbox.tsx: the island reads the data from the DOM instead of being
+ *    handed a serialised copy of it, so item metadata exists exactly once.
+ */
+
+import { getImage, Picture } from 'astro:assets';
+
+import type { GalleryItemView } from '@/data/gallery';
+
+export interface Props {
+  readonly item: GalleryItemView;
+  /** Position in the full list; used for the lightbox counter and prev/next. */
+  readonly position: number;
+}
+
+const { item, position } = Astro.props;
+
+/**
+ * Lightbox variant: 1400px wide, WebP, built once at build time.
+ * `getImage()` is async and runs during the build, so this costs nothing
+ * at runtime.
+ */
+const lightboxImage = await getImage({ src: item.image, width: 1400, format: 'webp' });
+
+const captionId = `gallery-item-${item.baseName}-caption`;
+---
+
+<li class="cnsq-gallery__item" data-category={item.category}>
+  <a
+    class="cnsq-gallery__link"
+    href={lightboxImage.src}
+    data-cnsq-lightbox
+    data-lightbox-position={position}
+    data-lightbox-src={lightboxImage.src}
+    data-lightbox-title={item.title}
+    data-lightbox-meta={`${item.client} · ${item.year}`}
+    data-lightbox-summary={item.summary}
+    data-lightbox-width={lightboxImage.attributes.width}
+    data-lightbox-height={lightboxImage.attributes.height}
+    aria-describedby={captionId}
+  >
+    <span class="cnsq-gallery__frame">
+      <Picture
+        src={item.image}
+        formats={['avif', 'webp']}
+        fallbackFormat="jpeg"
+        widths={[320, 480, 640, 960]}
+        sizes="(min-width: 64rem) 30vw, (min-width: 40rem) 45vw, 92vw"
+        alt={item.alt}
+        loading="lazy"
+        decoding="async"
+      />
+      <span class="cnsq-gallery__cue" aria-hidden="true">View</span>
+    </span>
+  </a>
+
+  <div class="cnsq-gallery__caption" id={captionId}>
+    <h3 class="cnsq-gallery__title">{item.title}</h3>
+    <p class="cnsq-gallery__meta">{item.client} · {item.year}</p>
+    <ul class="cnsq-gallery__tags">
+      {item.tags.map((tag) => <li class="cnsq-gallery__tag">{tag}</li>)}
+    </ul>
+  </div>
+</li>
+
+<style lang="scss">
+  @use 'abstracts/mixins' as mix;
+  @use 'abstracts/tokens' as t;
+
+  .cnsq-gallery {
+    &__item {
+      display: grid;
+      gap: var(--csq-space-sm);
+      align-content: start;
+    }
+
+    &__link {
+      @include mix.focus-ring;
+
+      display: block;
+      position: relative;
+      overflow: hidden;
+      background-color: var(--csq-ink-surface);
+      border: 1px solid var(--csq-line);
+      border-radius: var(--csq-radius-sm);
+      transition: border-color var(--csq-dur-base) var(--csq-ease-out);
+
+      @include mix.hover-capable {
+        &:hover {
+          border-color: var(--csq-line-strong);
+
+          // The zoom is applied to the image only; the frame stays put,
+          // which reads as a print being lifted rather than a layout
+          // moving under the pointer.
+          img {
+            transform: scale(1.03);
+          }
+
+          .cnsq-gallery__cue {
+            opacity: 1;
+            translate: 0 0;
+          }
+        }
+      }
+
+      // Keyboard parity: focusing the link reveals the same affordance
+      // that hover gives a mouse user.
+      &:focus-visible .cnsq-gallery__cue {
+        opacity: 1;
+        translate: 0 0;
+      }
+
+      &::after {
+        // Faint inner shadow so light images do not bleed into the frame.
+        content: '';
+        position: absolute;
+        inset: 0;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+        pointer-events: none;
+      }
+
+      img {
+        inline-size: 100%;
+        block-size: auto;
+        transition: transform var(--csq-dur-slow) var(--csq-ease-out);
+      }
+    }
+
+    &__frame {
+      display: block;
+      position: relative;
+    }
+
+    // The hover/focus "View" cue. `aria-hidden` in markup: it is a purely
+    // visual affordance and the link's accessible name already explains
+    // what activating it does.
+    &__cue {
+      position: absolute;
+      inset-block-end: var(--csq-space-sm);
+      inset-inline-start: var(--csq-space-sm);
+      padding: var(--csq-space-3xs) var(--csq-space-2xs);
+      background-color: var(--csq-accent);
+      color: var(--csq-ink);
+      font-size: var(--csq-step--2);
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      opacity: 0;
+      translate: 0 0.5rem;
+      transition: opacity var(--csq-dur-base) var(--csq-ease-out),
+        translate var(--csq-dur-base) var(--csq-ease-out);
+    }
+
+    &__caption {
+      display: grid;
+      gap: var(--csq-space-3xs);
+      padding-block-start: var(--csq-space-2xs);
+      border-block-start: 1px solid var(--csq-line);
+      transition: border-color var(--csq-dur-base) var(--csq-ease-out);
+    }
+
+    &__item:hover &__caption {
+      border-block-start-color: var(--csq-accent);
+    }
+
+    &__title {
+      font-size: var(--csq-step-1);
+      line-height: var(--csq-leading-snug);
+    }
+
+    &__meta {
+      font-size: var(--csq-step--2);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--csq-paper-faint);
+    }
+
+    &__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--csq-space-3xs);
+      font-size: var(--csq-step--2);
+      color: var(--csq-paper-faint);
+    }
+
+    &__tag::after {
+      content: ' ·';
+    }
+
+    &__tag:last-child::after {
+      content: '';
+    }
+  }
+
+  @include mix.reduced-motion {
+    .cnsq-gallery__link img,
+    .cnsq-gallery__cue,
+    .cnsq-gallery__caption {
+      transition: none;
+    }
+
+    .cnsq-gallery__link:hover img {
+      transform: none;
+    }
+  }
+</style>

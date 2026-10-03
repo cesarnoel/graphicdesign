@@ -1,0 +1,132 @@
+# cnsqdesigns — Netlify configuration
+# =====================================================================
+# ARCHITECTURAL DECISIONS
+# ---------------------------------------------------------------------
+# 1. `output: 'static'` means there is NO server adapter: Netlify serves the
+#    pre-built `dist/` folder straight from its edge CDN. No serverless
+#    cold starts, no runtime, nothing to scale — and the whole site can be
+#    rolled back instantly because every deploy is immutable.
+#
+# 2. Redirects live in public/_redirects, NOT here. Netlify gives
+#    netlify.toml redirects precedence over the _redirects file, so keeping
+#    every redirect in one place means there is exactly one order of
+#    evaluation to reason about. The migration map from the old Canva URLs
+#    is in that file.
+#
+# 3. Cache policy is the single biggest repeat-visit win on a static site:
+#      - /_astro/*  → hashed filenames (CSS, JS, fonts, optimised images)
+#                     so they can be cached for a year, immutably.
+#      - HTML       → must revalidate, so a new deploy is visible instantly
+#                     instead of after a TTL.
+#      - stable-named public assets (resume PDF, icons) → short max-age with
+#        must-revalidate, because replacing the file does NOT change its URL.
+#    Rules are evaluated in order and a later rule overrides an earlier one
+#    for the same header name, which is why the general rule comes first.
+#
+# 4. Security headers are applied globally. A strict
+#    Content-Security-Policy is deliberately NOT enabled yet: Astro emits
+#    inline module scripts for island hydration, so `script-src 'self'`
+#    would silently break the lightbox. See the commented block at the
+#    bottom for the exact plan to enable it safely.
+# =====================================================================
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Match the local toolchain (see "engines" in package.json). Pinned so a
+  # Netlify image change can never surprise the build.
+  NODE_VERSION = "22"
+  NPM_FLAGS = "--no-fund --no-audit"
+
+# ---------------------------------------------------------------------
+# Deploy contexts
+# ---------------------------------------------------------------------
+# Branch deploys and PR previews get the same build, so what you review is
+# exactly what ships. No preview-only environment variables, because there
+# is no backend to point at.
+[context.deploy-preview]
+  command = "npm run build"
+
+[context.branch-deploy]
+  command = "npm run build"
+
+# ---------------------------------------------------------------------
+# Headers
+# ---------------------------------------------------------------------
+[[headers]]
+  # Baseline for every response, including HTML.
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), geolocation=(), microphone=(), payment=(), usb=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  # Astro's build output. Filenames contain a content hash, so an
+  # `immutable` one-year cache is safe: new content always means a new URL.
+  # This covers the self-hosted fonts, the optimised images produced by
+  # astro:assets, and the lightbox island bundle.
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  # Stable, non-hashed filename: caching is welcome, but a replacement file
+  # must be picked up, so revalidation is mandatory.
+  for = "/cnsqdesigns-resume.pdf"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, must-revalidate"
+    Content-Type = "application/pdf"
+
+[[headers]]
+  for = "/cnsqdesigns-og.png"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, must-revalidate"
+
+[[headers]]
+  for = "/cnsqdesigns-icon-180.png"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, must-revalidate"
+
+[[headers]]
+  for = "/favicon.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, must-revalidate"
+
+# ---------------------------------------------------------------------
+# Netlify Forms
+# ---------------------------------------------------------------------
+# Nothing to configure. Netlify detects the form by scanning the built HTML
+# for `data-netlify="true"` (see src/components/ContactInfo.astro), so
+# submissions are stored without any server code. The honeypot field
+# (`netlify-honeypot`) filters bot traffic without a CAPTCHA vendor.
+
+# ---------------------------------------------------------------------
+# Content-Security-Policy — HOW TO ENABLE (not enabled yet)
+# ---------------------------------------------------------------------
+# Uncommenting the block below with `script-src 'self'` WOULD BREAK the
+# lightbox, because Astro emits an inline module script to hydrate the
+# island. To enable CSP properly, do one of these first:
+#
+#   a) Move the island's hydration into an external file so `script-src
+#      'self'` is sufficient (or)
+#   b) Generate a nonce/hash per build and inject it via an Astro
+#      integration (or)
+#   c) Start in report-only mode with a collector, then tighten.
+#
+# The template, once one of the above is done:
+#
+# [[headers]]
+#   for = "/*"
+#   [headers.values]
+#     Content-Security-Policy = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'none'"
+#
+# `style-src 'unsafe-inline'` is needed because Astro inlines small
+# stylesheets and the Fonts API injects @font-face rules as a style element.
+# Scoped <style> blocks would otherwise need hashes too.

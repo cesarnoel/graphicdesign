@@ -1,0 +1,116 @@
+////
+/// cnsqdesigns — typography
+/// =====================================================================
+/// Type is the main aesthetic instrument of this design, so the rules are
+/// deliberate rather than default:
+///   - Bodoni Moda (high-contrast Didone) carries headlines — an editorial
+///     reference to the print side of the practice.
+///   - Archivo (grotesque) carries body/UI text, and is a genuinely
+///     different voice from the display face instead of a lighter weight
+///     of the same family.
+///   - Neither family is a system/AI-default stack (no Inter/Roboto/Arial
+///     body text), which is what makes the site feel designed.
+///
+/// Both families are self-hosted by Astro's Fonts API; the `--csq-font-*`
+/// variables are provided by the <Font /> tags in BaseLayout.astro.
+////
+
+@use 'abstracts/mixins' as mix;
+@use 'abstracts/tokens' as t;
+
+:where(body) {
+  font-family: var(--csq-font-body, #{t.$csq-font-body});
+  font-size: var(--csq-step-0);
+  font-weight: 400;
+  line-height: var(--csq-leading-normal);
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+:where(h1, h2, h3) {
+  font-family: var(--csq-font-display, #{t.$csq-font-display});
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: var(--csq-leading-tight);
+  color: var(--csq-paper);
+}
+
+:where(h1) {
+  font-size: var(--csq-step-4);
+}
+
+:where(h2) {
+  font-size: var(--csq-step-3);
+}
+
+:where(h3) {
+  font-size: var(--csq-step-2);
+  line-height: var(--csq-leading-snug);
+}
+
+:where(p) {
+  color: var(--csq-paper-muted);
+  line-height: var(--csq-leading-relaxed);
+}
+
+// Section eyebrows and other small caps labels.
+.cnsq-eyebrow {
+  @include mix.eyebrow;
+
+  display: flex;
+  align-items: center;
+  gap: var(--csq-space-xs);
+  margin: 0;
+  color: var(--csq-paper-faint);
+
+  // The vermilion tick that precedes every section label — a small,
+  // repeated brand gesture that ties the sections together.
+  &::before {
+    content: '';
+    inline-size: 1.75rem;
+    block-size: 1px;
+    background-color: var(--csq-accent);
+  }
+}
+
+// Inline links in prose get an underline that grows from the left.
+.cnsq-link {
+  color: var(--csq-paper);
+  text-decoration: underline;
+  text-decoration-color: var(--csq-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.24em;
+  transition: color var(--csq-dur-fast) var(--csq-ease-out),
+    text-decoration-thickness var(--csq-dur-fast) var(--csq-ease-out);
+
+  @include mix.hover-capable {
+    &:hover {
+      color: var(--csq-accent);
+      text-decoration-thickness: 2px;
+    }
+  }
+
+  @include mix.focus-ring;
+}
+
+::selection {
+  background-color: var(--csq-accent);
+  color: var(--csq-ink);
+}
+
+// Accessibility affordances that must live outside components.
+.cnsq-visually-hidden {
+  @include mix.visually-hidden;
+}
+
+.cnsq-skip-link {
+  @include mix.skip-link;
+}
+
+// Keyboard users get the focus ring on every interactive element by
+// default, so no component can forget it.
+:where(a, button, [tabindex], summary, input, select, textarea):focus-visible {
+  outline: var(--csq-focus-width) solid var(--csq-accent);
+  outline-offset: var(--csq-focus-offset);
+  border-radius: var(--csq-radius-sm);
+}

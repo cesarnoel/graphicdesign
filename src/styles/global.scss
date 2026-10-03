@@ -1,0 +1,30 @@
+////
+/// cnsqdesigns — global stylesheet entry point
+/// =====================================================================
+/// Imported once, from BaseLayout.astro. Order matters:
+///
+///   1. root       — publishes the CSS custom properties everything else
+///                   consumes (must come first).
+///   2. reset      — zero-specificity normalisation.
+///   3. typography — base type scale and the eyebrow/link primitives.
+///   4. buttons    — the shared button primitive.
+///   5. motion     — reveal/stagger animations and the reduced-motion kill.
+///
+/// Everything a component *only* needs locally lives in that component's
+/// `<style>` block instead, so Astro can inline or scope it. This file is
+/// deliberately limited to what is genuinely global.
+///
+/// `@use` (not `@import`) is required: Dart Sass 1.105 deprecates
+/// `@import`, and `@use` gives each module its own namespace, which
+/// prevents the accidental global variable leaks this codebase would
+/// otherwise accumulate.
+////
+
+@use 'base/root';
+@use 'base/reset';
+@use 'base/typography';
+@use 'base/buttons';
+@use 'base/ambient';
+@use 'base/motion';
+// Component stylesheets that CANNOT be scoped by Astro (React islands).
+@use 'components/lightbox';

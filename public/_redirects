@@ -1,0 +1,54 @@
+# cnsqdesigns — Netlify redirects
+# =====================================================================
+# This file is for REDIRECTS ONLY. Headers and build settings live in
+# netlify.toml (which takes precedence over this file for redirects, so
+# never put a redirect in both places).
+#
+# Syntax:  /from  /to  [status]
+#   * 301 = permanent move. Use this for the Canva migration: it transfers
+#     the ranking signal from the old URLs to the new ones.
+#   * 302 = temporary. Use only for convenience aliases.
+# Rules are evaluated top to bottom; the first match wins, so specific
+# paths must come before wildcards.
+
+# ---------------------------------------------------------------------
+# Active: friendly aliases for brand assets
+# ---------------------------------------------------------------------
+# Short URLs that are easy to say out loud, print on a business card, or
+# hand to a client. /cnsqdesigns-resume.pdf is the canonical filename
+# (brand naming convention: cnsqdesigns-*).
+/resume            /cnsqdesigns-resume.pdf            302
+/cv                /cnsqdesigns-resume.pdf            302
+
+# ---------------------------------------------------------------------
+# ACTION REQUIRED before launch: Canva Sites -> cnsqdesigns
+# ---------------------------------------------------------------------
+# Canva generates opaque paths (/about-1, /our-work, /services-2, ...).
+# Replace the commented examples below with the REAL paths from the Canva
+# export or the old Netlify deploy log, then uncomment them. Every one that
+# is missed is a broken link a potential client will hit, and a 404 where a
+# search engine previously ranked the page.
+#
+# Mapping conventions used by this site's anchors:
+#   About    -> /#about
+#   Work     -> /#gallery
+#   Services -> /#services
+#   Contact  -> /#contact
+#
+# /about-1          /#about       301
+# /about-us         /#about       301
+# /our-work         /#gallery     301
+# /portfolio        /#gallery     301
+# /work             /#gallery     301
+# /services-2       /#services    301
+# /services         /#services    301
+# /contact-us       /#contact     301
+# /contact-1        /#contact     301
+
+# ---------------------------------------------------------------------
+# Deliberately NOT present: a catch-all rewrite
+# ---------------------------------------------------------------------
+# Do NOT add `/*  /index.html  200`. That is an SPA trick: it returns HTTP
+# 200 for URLs that do not exist, which hides genuine 404s from search
+# engines and makes Google index the same page under unlimited URLs.
+# Astro emits a real dist/404.html and Netlify serves it automatically.

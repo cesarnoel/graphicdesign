@@ -1,0 +1,161 @@
+////
+/// cnsqdesigns — lightbox (styles for the React island)
+/// =====================================================================
+/// ARCHITECTURAL NOTE — why this CSS is global.
+/// React components cannot use Astro's scoped <style lang="scss"> blocks,
+/// so the lightbox's styling has to live in the stylesheet pipeline. It is
+/// kept out of the critical path by being tiny (~1.5 KB uncompressed) and
+/// by targeting only elements that do not exist until the dialog opens.
+///
+/// The dialog itself is native: ::backdrop, top-layer stacking, focus
+/// containment and Esc handling come from the browser. All that is left to
+/// do here is art direction.
+////
+
+@use '../abstracts/mixins' as mix;
+@use '../abstracts/tokens' as t;
+
+.cnsq-lightbox {
+  // Native dialogs are `display: none` until showModal() is called, so
+  // none of this costs anything until the visitor asks for it.
+  inline-size: min(72rem, 94vw);
+  max-block-size: 92svh;
+  padding: 0;
+  border: 1px solid var(--csq-line);
+  border-radius: var(--csq-radius-md);
+  background-color: var(--csq-ink-deep);
+  color: var(--csq-paper);
+  box-shadow: var(--csq-shadow-overlay);
+  overflow: hidden;
+
+  &::backdrop {
+    background-color: rgba(6, 6, 7, 0.88);
+    backdrop-filter: blur(8px);
+  }
+
+  &__panel {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    max-block-size: 92svh;
+  }
+
+  &__bar,
+  &__nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--csq-space-sm);
+    padding: var(--csq-space-2xs) var(--csq-space-sm);
+  }
+
+  &__bar {
+    border-block-end: 1px solid var(--csq-line);
+  }
+
+  &__nav {
+    border-block-start: 1px solid var(--csq-line);
+  }
+
+  &__counter {
+    @include mix.eyebrow;
+
+    margin: 0;
+    font-size: var(--csq-step--2);
+    color: var(--csq-paper-faint);
+  }
+
+  &__figure {
+    display: grid;
+    margin: 0;
+    padding: var(--csq-space-sm);
+    gap: var(--csq-space-sm);
+    overflow: auto;
+  }
+
+  &__image {
+    // contain + a viewport-relative cap keeps a portrait print and a wide
+    // web shot inside the same dialog without cropping either.
+    max-inline-size: 100%;
+    max-block-size: 62svh;
+    inline-size: auto;
+    block-size: auto;
+    margin-inline: auto;
+    object-fit: contain;
+    background-color: var(--csq-ink-surface);
+  }
+
+  &__caption {
+    max-inline-size: 62ch;
+  }
+
+  &__title {
+    font-size: var(--csq-step-2);
+    margin-block-end: var(--csq-space-3xs);
+  }
+
+  &__meta {
+    @include mix.eyebrow;
+
+    font-size: var(--csq-step--2);
+    color: var(--csq-accent);
+    margin-block-end: var(--csq-space-2xs);
+  }
+
+  &__summary {
+    font-size: var(--csq-step--1);
+    color: var(--csq-paper-muted);
+  }
+
+  &__button {
+    min-block-size: 2.75rem;
+    padding: var(--csq-space-xs) var(--csq-space-sm);
+    border: 1px solid var(--csq-line-strong);
+    border-radius: var(--csq-radius-sm);
+    background-color: transparent;
+    color: var(--csq-paper);
+    font-size: var(--csq-step--1);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color var(--csq-dur-fast) var(--csq-ease-out),
+      border-color var(--csq-dur-fast) var(--csq-ease-out);
+
+    @include mix.focus-ring;
+
+    @include mix.hover-capable {
+      &:hover:not(:disabled) {
+        border-color: var(--csq-accent);
+        color: var(--csq-accent);
+      }
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    &--close {
+      border-color: transparent;
+      color: var(--csq-paper-muted);
+    }
+  }
+}
+
+@include mix.from('md') {
+  .cnsq-lightbox__figure {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: start;
+    gap: var(--csq-space-md);
+    padding: var(--csq-space-md);
+  }
+
+  .cnsq-lightbox__image {
+    max-block-size: 70svh;
+  }
+}
+
+@include mix.reduced-motion {
+  .cnsq-lightbox__button {
+    transition: none;
+  }
+}

@@ -1,0 +1,180 @@
+////
+/// cnsqdesigns — shared mixins
+/// =====================================================================
+/// Import with: `@use 'abstracts/mixins' as mix;`
+/// (`loadPaths` in astro.config.mjs makes the path depth-independent.)
+///
+/// These are the *only* sanctioned ways to build layout in a component,
+/// which is what keeps spacing, focus behaviour and motion consistent
+/// across the site instead of being re-invented per section.
+////
+
+@use 'sass:map';
+@use 'abstracts/tokens' as t;
+
+// ---------------------------------------------------------------------
+// Media queries — mobile-first, keyword based
+// ---------------------------------------------------------------------
+/// min-width query: `@include mix.from('md') { ... }`
+@mixin from($breakpoint) {
+  $widths: (
+    'sm': t.$csq-bp-sm,
+    'md': t.$csq-bp-md,
+    'lg': t.$csq-bp-lg,
+    'xl': t.$csq-bp-xl,
+  );
+
+  @if not map.has-key($widths, $breakpoint) {
+    @error 'Unknown breakpoint "#{$breakpoint}". Use sm, md, lg or xl.';
+  }
+
+  @media (min-width: map.get($widths, $breakpoint)) {
+    @content;
+  }
+}
+
+/// max-width query — only for the rare "stop being a rail" case.
+@mixin until($breakpoint) {
+  $widths: (
+    'sm': t.$csq-bp-sm,
+    'md': t.$csq-bp-md,
+    'lg': t.$csq-bp-lg,
+    'xl': t.$csq-bp-xl,
+  );
+
+  @media (max-width: (map.get($widths, $breakpoint) - 0.0625rem)) {
+    @content;
+  }
+}
+
+/// Motion is opt-out by default: every animation must be wrapped in this
+/// so `prefers-reduced-motion` users get an instantly-final layout.
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+/// Pointer/hover capability instead of viewport guessing.
+@mixin hover-capable {
+  @media (hover: hover) and (pointer: fine) {
+    @content;
+  }
+}
+
+// ---------------------------------------------------------------------
+// Layout
+// ---------------------------------------------------------------------
+/// Centred content shell. Every section uses exactly one of these.
+@mixin shell {
+  width: 100%;
+  max-width: t.$csq-shell-max;
+  margin-inline: auto;
+  padding-inline: t.$csq-shell-pad;
+}
+
+/// Vertical rhythm for a page section, fluid with the viewport.
+/// The `scroll-margin-top` is what makes the sticky header not cover the
+/// heading when a nav anchor is followed (paired with CSS
+/// `scroll-behavior: smooth` — this is the JS-free smooth-scroll nav).
+@mixin section-shell($top: t.$csq-space-2xl, $bottom: t.$csq-space-2xl) {
+  padding-block: clamp($top, 9vw, $bottom);
+  scroll-margin-top: calc(t.$csq-header-block + #{t.$csq-space-md});
+  position: relative;
+}
+
+/// Responsive auto-fit grid used by the gallery and the services list.
+@mixin auto-grid($min: 16rem, $gap: t.$csq-space-md) {
+  display: grid;
+  gap: $gap;
+  grid-template-columns: repeat(auto-fit, minmax(min(#{$min}, 100%), 1fr));
+}
+
+// ---------------------------------------------------------------------
+// Typography
+// ---------------------------------------------------------------------
+/// Display type (Bodoni Moda). Always tighten the tracking as size grows.
+@mixin display($size: t.$csq-step-5, $leading: t.$csq-leading-tight) {
+  font-family: var(--csq-font-display, #{t.$csq-font-display});
+  font-size: $size;
+  font-weight: 400;
+  line-height: $leading;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/// The small all-caps "eyebrow" label above section headings.
+/// Archivo at 600 with wide tracking — deliberately not a mono font, to
+/// avoid the default developer-portfolio look.
+@mixin eyebrow {
+  font-family: var(--csq-font-body, #{t.$csq-font-body});
+  font-size: t.$csq-step--1;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+/// Lead paragraph.
+@mixin lead {
+  font-size: t.$csq-step-1;
+  line-height: t.$csq-leading-relaxed;
+  max-width: t.$csq-measure;
+  color: var(--csq-paper-muted);
+}
+
+// ---------------------------------------------------------------------
+// Accessibility
+// ---------------------------------------------------------------------
+/// Screen-reader-only content that stays focusable (skip links).
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/// Undo `visually-hidden` on focus.
+@mixin visually-hidden-undo {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
+}
+
+/// One focus treatment for the whole site. Uses `:focus-visible` so mouse
+/// users never see a ring, keyboard users always do. Accent on ink is
+/// 5.4:1 and accent on paper is 3.2:1 — valid for a 2px UI boundary.
+@mixin focus-ring {
+  &:focus-visible {
+    outline: var(--csq-focus-width) solid var(--csq-accent);
+    outline-offset: var(--csq-focus-offset);
+    border-radius: t.$csq-radius-sm;
+  }
+}
+
+/// The skip-link target: never leave a keyboard user without a landmark.
+@mixin skip-link {
+  @include visually-hidden;
+
+  &:focus-visible {
+    @include visually-hidden-undo;
+    position: fixed;
+    inset-block-start: t.$csq-space-sm;
+    inset-inline-start: t.$csq-space-sm;
+    z-index: 999;
+    padding: t.$csq-space-xs t.$csq-space-sm;
+    background: var(--csq-paper);
+    color: var(--csq-ink);
+    font-weight: 600;
+    border-radius: t.$csq-radius-md;
+  }
+}

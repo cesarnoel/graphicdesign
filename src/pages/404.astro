@@ -1,0 +1,92 @@
+---
+/**
+ * cnsqdesigns — 404 page
+ * =====================================================================
+ * ARCHITECTURAL DECISIONS
+ * ---------------------------------------------------------------------
+ * 1. This is a first-class Astro route, so the build emits a real
+ *    `dist/404.html`. Netlify serves that file automatically for unknown
+ *    paths — there is no SPA catch-all rewrite in _redirects, because a
+ *    catch-all would return HTTP 200 for missing pages (bad for search
+ *    engines and worse for humans, who would land on a "working" page).
+ * 2. `noindex` keeps the route out of the sitemap (see the sitemap filter
+ *    in astro.config.mjs) and out of the search index.
+ * 3. The page offers the same navigation as the header, because the most
+ *    common reason to land here is a stale Canva-era link — which is
+ *    exactly what public/_redirects is there to fix.
+ */
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { SECTIONS, SITE } from '@/data/site';
+---
+
+<BaseLayout
+  title={`Page not found — ${SITE.name}`}
+  description="That page does not exist. Start again from the work, the services or the contact form."
+  path="/404"
+  noindex
+>
+  <section class="cnsq-notfound" aria-labelledby="notfound-heading">
+    <div class="cnsq-notfound__inner">
+      <p class="cnsq-eyebrow">Error 404</p>
+      <h1 class="cnsq-notfound__title" id="notfound-heading">
+        That page has been moved, renamed, or never existed.
+      </h1>
+      <p class="cnsq-notfound__lead">
+        If you arrived from an old link to the Canva site, the section you
+        wanted is almost certainly one of these:
+      </p>
+      <ul class="cnsq-notfound__list">
+        {
+          SECTIONS.map((section) => (
+            <li>
+              <a class="cnsq-link" href={`/#${section.id}`}>
+                {section.label}
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <a class="cnsq-link" href="/">Home</a>
+        </li>
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style lang="scss">
+  @use 'abstracts/mixins' as mix;
+
+  .cnsq-notfound {
+    @include mix.section-shell;
+
+    display: grid;
+    align-content: center;
+    min-block-size: 60svh;
+
+    &__inner {
+      @include mix.shell;
+
+      display: grid;
+      gap: var(--csq-space-sm);
+      max-inline-size: 46rem;
+    }
+
+    &__title {
+      font-size: var(--csq-step-4);
+      max-inline-size: 28ch;
+    }
+
+    &__lead {
+      @include mix.lead;
+    }
+
+    &__list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--csq-space-xs) var(--csq-space-md);
+      margin-block-start: var(--csq-space-sm);
+      font-size: var(--csq-step-0);
+    }
+  }
+</style>

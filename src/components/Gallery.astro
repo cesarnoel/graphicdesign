@@ -1,0 +1,231 @@
+---
+/**
+ * cnsqdesigns — gallery section
+ * =====================================================================
+ * ARCHITECTURAL DECISIONS
+ * ---------------------------------------------------------------------
+ * 1. THE FILTERS ARE PURE CSS. Four radio inputs (visually hidden but
+ *    focusable) plus `:has()` on the container hide the items that do not
+ *    match the selected category. Concretely:
+ *      - the feature works with JavaScript completely disabled,
+ *      - it ships 0 KB of JS and 0 bytes of hydration,
+ *      - the radio group gives keyboard users arrow-key selection and
+ *        screen readers a properly announced "1 of 4" set for free,
+ *      - browsers without `:has()` simply show all items (a valid, if
+ *        unfiltered, gallery) instead of breaking.
+ *    A React filter was rejected on purpose: it would add hydration cost
+ *    to the most expensive section on the page for no functional gain.
+ * 2. Item counts are computed at BUILD time and rendered into the labels,
+ *    so the visitor can see how much work sits behind each category
+ *    without downloading the images. (We cannot announce a live count
+ *    without JS, so the count is statically correct rather than dynamic —
+ *    and since filtering only hides already-present DOM, it stays correct.)
+ * 3. The grid is a real <ul>/<li> list: assistive technology announces the
+ *    number of items, and the list remains meaningful with CSS disabled.
+ * 4. `aria-labelledby` names the region, and the noscript block explains
+ *    the degraded behaviour rather than leaving the user guessing.
+ */
+
+import { GALLERY, GALLERY_CATEGORIES, type GalleryCategoryId } from '@/data/gallery';
+import { requireAsset } from '@/lib/assets';
+import SectionHeading from '@/components/SectionHeading.astro';
+import GalleryItem from '@/components/GalleryItem.astro';
+import Lightbox from '@/components/Lightbox.tsx';
+
+/**
+ * Resolve each entry's image at build time. `requireAsset` throws if a
+ * file is missing, so a content typo fails the build instead of shipping
+ * a broken thumbnail.
+ */
+const items = GALLERY.map((entry) => ({ ...entry, image: requireAsset(entry.baseName) }));
+
+/** Static counts for the filter labels. */
+const countFor = (id: GalleryCategoryId): number =>
+  id === 'all' ? items.length : items.filter((item) => item.category === id).length;
+---
+
+<section id="gallery" class="cnsq-gallery" aria-labelledby="gallery-heading">
+  <div class="cnsq-gallery__inner">
+    <SectionHeading
+      eyebrow="Selected work"
+      heading="Three disciplines, one standard of finish."
+      sectionId="gallery"
+      level="h2"
+    >
+      <p class="cnsq-gallery__lead">
+        Filter by discipline. Every piece is shown at the size it was designed to be
+        judged at — nothing here is a screenshot of a screenshot.
+      </p>
+    </SectionHeading>
+
+    <fieldset class="cnsq-gallery__filters">
+      <legend class="cnsq-visually-hidden">Filter work by discipline</legend>
+      {
+        GALLERY_CATEGORIES.map((category, index) => (
+          <div class="cnsq-gallery__filter">
+            <input
+              class="cnsq-gallery__radio cnsq-visually-hidden"
+              type="radio"
+              name="cnsq-gallery-filter"
+              id={`cnsq-filter-${category.id}`}
+              value={category.id}
+              checked={index === 0}
+            />
+            <label class="cnsq-gallery__filter-label" for={`cnsq-filter-${category.id}`}>
+              <span class="cnsq-gallery__filter-name">{category.label}</span>
+              <span class="cnsq-gallery__filter-count">{countFor(category.id)}</span>
+            </label>
+          </div>
+        ))
+      }
+    </fieldset>
+
+    {
+      /* Explains the degraded behaviour up front — a no-JS visitor is
+         informed rather than confused. */
+    }
+    <noscript>
+      <p class="cnsq-gallery__noscript">
+        JavaScript is turned off. Filtering still works; selecting a thumbnail opens the
+        full-size image in this tab.
+      </p>
+    </noscript>
+
+    <ul class="cnsq-gallery__grid" id="cnsq-gallery-grid">
+      {items.map((item, index) => <GalleryItem item={item} position={index} />)}
+    </ul>
+  </div>
+
+  {
+    /* The lightbox is the ONLY hydrated component on the site. It is
+       deferred with client:idle (see the note in Lightbox.tsx) and reads
+       its content from the DOM the server already produced. */
+  }
+  <Lightbox client:idle />
+</section>
+
+<style lang="scss">
+  @use 'abstracts/mixins' as mix;
+  @use 'abstracts/tokens' as t;
+
+  .cnsq-gallery {
+    @include mix.section-shell;
+
+    &__inner {
+      @include mix.shell;
+    }
+
+    &__lead {
+      @include mix.lead;
+
+      margin: 0;
+    }
+
+    // --- filters ------------------------------------------------------
+    // A radio group, not buttons: it is the native control for "pick one
+    // of four", so arrow keys, the checked state and the announcement all
+    // come from the browser instead of from our JavaScript.
+    &__filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--csq-space-xs);
+      margin: 0 0 var(--csq-space-lg);
+      padding: 0;
+      border: 0;
+    }
+
+    &__filter-label {
+      display: inline-flex;
+      align-items: baseline;
+      gap: var(--csq-space-2xs);
+      min-block-size: 2.75rem;
+      padding: var(--csq-space-xs) var(--csq-space-sm);
+      border: 1px solid var(--csq-line-strong);
+      border-radius: var(--csq-radius-sm);
+      font-size: var(--csq-step--1);
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--csq-paper-muted);
+      cursor: pointer;
+      transition: color var(--csq-dur-fast) var(--csq-ease-out),
+        border-color var(--csq-dur-fast) var(--csq-ease-out),
+        background-color var(--csq-dur-fast) var(--csq-ease-out);
+
+      @include mix.hover-capable {
+        &:hover {
+          color: var(--csq-paper);
+          border-color: var(--csq-paper);
+        }
+      }
+    }
+
+    &__filter-count {
+      font-size: var(--csq-step--2);
+      color: var(--csq-paper-faint);
+    }
+
+    // The radio itself is visually hidden but still in the tab order, so
+    // :focus-visible on it must move the ring to the visible label.
+    &__radio:focus-visible + &__filter-label {
+      outline: var(--csq-focus-width) solid var(--csq-accent);
+      outline-offset: var(--csq-focus-offset);
+    }
+
+    // Selected state.
+    &__radio:checked + &__filter-label {
+      background-color: var(--csq-paper);
+      border-color: var(--csq-paper);
+      color: var(--csq-ink);
+
+      .cnsq-gallery__filter-count {
+        color: var(--csq-accent-deep);
+      }
+    }
+
+    // --- filtering ----------------------------------------------------
+    // The entire filter, in CSS. `:has()` on the section's container reads
+    // the checked radio and hides the non-matching items. No `:has()`
+    // support => nothing is hidden => the gallery still works.
+    @each $category in ('web', 'print', 'ebook') {
+      &__inner:has(#{"#"}cnsq-filter-#{$category}:checked) {
+        .cnsq-gallery__item:not([data-category='#{$category}']) {
+          display: none;
+        }
+      }
+    }
+
+    &__noscript {
+      margin-block-end: var(--csq-space-md);
+      padding: var(--csq-space-xs) var(--csq-space-sm);
+      border-inline-start: 2px solid var(--csq-accent);
+      background-color: var(--csq-ink-surface);
+      font-size: var(--csq-step--1);
+      color: var(--csq-paper-muted);
+    }
+
+    // --- grid ---------------------------------------------------------
+    &__grid {
+      display: grid;
+      gap: var(--csq-space-lg) var(--csq-space-md);
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @include mix.from('sm') {
+    .cnsq-gallery__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @include mix.from('lg') {
+    .cnsq-gallery__grid {
+      // Three columns, but the two portrait print pieces are allowed to
+      // span a taller row so the grid keeps an editorial, uneven rhythm
+      // instead of a rigid gallery of identical tiles.
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--csq-space-xl) var(--csq-space-md);
+      align-items: start;
+    }
+  }
+</style>

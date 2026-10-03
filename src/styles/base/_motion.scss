@@ -1,0 +1,116 @@
+////
+/// cnsqdesigns — motion
+/// =====================================================================
+/// ARCHITECTURAL DECISION — motion costs 0 KB of JavaScript.
+///
+/// The reveal-on-scroll effect uses CSS *scroll-driven animations*
+/// (`animation-timeline: view()`), not an IntersectionObserver. That means
+/// the animation is handled by the compositor, produces no main-thread
+/// work, ships no library, and simply does nothing on engines that do not
+/// support it yet (the content renders in its final state — a safe,
+/// graceful degradation rather than a blank section).
+///
+/// Every animation is gated behind `prefers-reduced-motion: no-preference`
+/// so the default for a reduced-motion user is an instantly-final page.
+////
+
+/// Elements opt in with `class="cnsq-reveal"`.
+.cnsq-reveal {
+  will-change: opacity, transform;
+}
+
+/// Time-based entrance staggers for content that is already in the
+/// viewport at load (the hero). Deliberately NOT inside the
+/// `@supports (animation-timeline: view())` block below, because these do
+/// not use a scroll timeline at all.
+///
+/// LCP NOTE — this is why there are two variants:
+///   `.cnsq-lift` animates transform ONLY, so the <h1> (usually the LCP
+///   element) is painted at full opacity in the first frame instead of
+///   waiting on an animation delay. Lighthouse does not count
+///   fully-transparent elements as contentful, so fading the headline in
+///   would delay the LCP measurement by the length of the delay.
+///   `.cnsq-rise` fades AND lifts, and is only used for supporting content
+///   (eyebrow, lead paragraph, buttons).
+@media (prefers-reduced-motion: no-preference) {
+  .cnsq-rise {
+    animation: cnsq-rise-in var(--csq-dur-slow) var(--csq-ease-out) both;
+    animation-delay: var(--cnsq-delay, 0ms);
+  }
+
+  .cnsq-lift {
+    animation: cnsq-lift-in var(--csq-dur-slow) var(--csq-ease-out) both;
+    animation-delay: var(--cnsq-delay, 0ms);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .cnsq-reveal {
+      animation: cnsq-reveal-in linear both;
+      animation-timeline: view();
+      // Start revealing as the element enters, finish well before it
+      // reaches the middle of the viewport.
+      animation-range: entry 8% cover 28%;
+    }
+  }
+}
+
+@keyframes cnsq-reveal-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 1.5rem, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes cnsq-rise-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 1.25rem, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/// Transform-only counterpart of `cnsq-rise-in` — see the LCP note above.
+@keyframes cnsq-lift-in {
+  from {
+    transform: translate3d(0, 1.5rem, 0);
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/// Hairline wipe used by the "live" indicators and the accent rules.
+@keyframes cnsq-wipe-in {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/// Reduced-motion users still get *state* feedback (colour, opacity) but
+/// never movement. This is the single global kill switch.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
