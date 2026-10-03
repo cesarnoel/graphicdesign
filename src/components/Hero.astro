@@ -134,29 +134,29 @@ const heroMark = requireAsset('cnsqdesigns-hero-mark');
       border-radius: var(--csq-radius-md);
     }
 
-    // Copy block: centred text. The facts strip below is a sibling grid,
-    // so centring here affects only the eyebrow/headline/standfirst/CTAs.
+    // Copy block: left-aligned editorial text. Only the facts strip
+    // below is centred — the headline/standfirst/CTAs stay left.
     &__copy {
       display: grid;
       gap: var(--csq-space-md);
       max-inline-size: none;
-      justify-items: center;
-      text-align: center;
+      justify-items: start;
+      text-align: start;
     }
 
     &__title {
-      margin-inline: auto;
+      margin-inline: 0;
     }
 
     &__standfirst {
       @include mix.lead;
 
-      margin-inline: auto;
+      margin-inline: 0;
     }
 
     &__actions {
       margin-block-start: var(--csq-space-2xs);
-      justify-content: center;
+      justify-content: start;
     }
 
     // Facts strip: full shell width (sibling of the two-column grid, so
@@ -181,7 +181,7 @@ const heroMark = requireAsset('cnsqdesigns-hero-mark');
 
     &__eyebrow {
       margin: 0;
-      justify-content: center;
+      justify-content: start;
     }
 
     &__title {
