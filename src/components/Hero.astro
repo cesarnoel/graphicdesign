@@ -4,67 +4,86 @@
  * =====================================================================
  * ARCHITECTURAL DECISIONS
  * ---------------------------------------------------------------------
- * 1. The hero contains NO image. The largest contentful paint is therefore
- *    a block of preloaded text, which is the cheapest possible LCP — no
- *    hero photograph to download, no eager image in the critical path.
- *    Atmosphere is produced with CSS (the ambient hatch in
- *    src/styles/base/_ambient.scss plus the specimen grid below), so the
- *    visual weight survives with zero bytes.
- * 2. Entrance animation is CSS-only and stagger-scheduled with inline
+ * 1. The hero artwork is the Canva demo site brand mark
+ *    (media/36d54cdbe2be5535f5050d60e0581b1f.png, 700x300) ingested as
+ *    src/assets/brand/cnsqdesigns-hero-mark.png. It is rendered with
+ *    <Picture> eager + fetchpriority="high": it shares the first viewport
+ *    with the <h1>, so it is part of the LCP and must not be lazy. The
+ *    source is only ~196 KB and Astro emits smaller AVIF/WebP variants,
+ *    so the LCP cost stays inside budget — unlike a hero photograph.
+ * 2. Layout is two-column on desktop (copy left, mark right) collapsing
+ *    to stacked on mobile with the mark first, so the brand reads before
+ *    the headline on a phone. The ambient hatch + specimen grid remain as
+ *    the zero-byte backdrop.
+ * 3. Entrance animation is CSS-only and stagger-scheduled with inline
  *    `--cnsq-delay` custom properties. No animation library, no client JS,
  *    and `prefers-reduced-motion` users see the final layout immediately.
  *    The <h1> uses the transform-only `.cnsq-lift` variant so the LCP
  *    element is opaque in the first frame (see the note in _motion.scss).
- * 3. The facts row is a real <dl>, and the rotated edge label is
- *    `aria-hidden` because it duplicates that list — decorative repetition
- *    must never be announced twice by a screen reader.
  * 4. One <h1> per page: the hero owns it, sections use <h2>.
  * 5. CTA anchors are plain `href="#id"` links. Smooth scrolling and the
  *    sticky-header offset are handled in CSS (see _reset.scss), so the
  *    navigation works identically with JavaScript disabled.
  */
 
-import { HERO, PROFILE } from '@/data/site';
+import { Picture } from 'astro:assets';
+
+import { HERO } from '@/data/site';
+import { requireAsset } from '@/lib/assets';
+
+const heroMark = requireAsset('cnsqdesigns-hero-mark');
 ---
 
 <section class="cnsq-hero" aria-labelledby="hero-heading">
   <div class="cnsq-hero__inner">
-    <p class="cnsq-eyebrow cnsq-hero__eyebrow cnsq-rise" style="--cnsq-delay: 60ms">
-      {HERO.eyebrow}
-    </p>
+    <figure class="cnsq-hero__figure cnsq-rise" style="--cnsq-delay: 0ms">
+      <Picture
+        src={heroMark}
+        formats={['avif', 'webp']}
+        fallbackFormat="png"
+        widths={[360, 560, 700]}
+        sizes="(min-width: 64rem) 36vw, 84vw"
+        alt="cnsqdesigns brand mark artwork from the Canva demo site"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+      />
+    </figure>
 
-    <h1 id="hero-heading" class="cnsq-hero__title cnsq-lift" style="--cnsq-delay: 0ms">
-      {HERO.headline}
-    </h1>
+    <div class="cnsq-hero__copy">
+      <p class="cnsq-eyebrow cnsq-hero__eyebrow cnsq-rise" style="--cnsq-delay: 60ms">
+        {HERO.eyebrow}
+      </p>
 
-    <p class="cnsq-hero__standfirst cnsq-rise" style="--cnsq-delay: 180ms">
-      {HERO.standfirst}
-    </p>
+      <h1 id="hero-heading" class="cnsq-hero__title cnsq-lift" style="--cnsq-delay: 0ms">
+        {HERO.headline}
+      </h1>
 
-    <div class="cnsq-button-group cnsq-hero__actions cnsq-rise" style="--cnsq-delay: 260ms">
-      <a class="cnsq-button cnsq-button--solid" href={`#${HERO.primaryCta.id}`}>
-        {HERO.primaryCta.label}
-      </a>
-      <a class="cnsq-button cnsq-button--ghost" href={`#${HERO.secondaryCta.id}`}>
-        {HERO.secondaryCta.label}
-      </a>
+      <p class="cnsq-hero__standfirst cnsq-rise" style="--cnsq-delay: 180ms">
+        {HERO.standfirst}
+      </p>
+
+      <div class="cnsq-button-group cnsq-hero__actions cnsq-rise" style="--cnsq-delay: 260ms">
+        <a class="cnsq-button cnsq-button--solid" href={`#${HERO.primaryCta.id}`}>
+          {HERO.primaryCta.label}
+        </a>
+        <a class="cnsq-button cnsq-button--ghost" href={`#${HERO.secondaryCta.id}`}>
+          {HERO.secondaryCta.label}
+        </a>
+      </div>
+
+      <dl class="cnsq-hero__facts cnsq-reveal">
+        {
+          HERO.facts.map((fact) => (
+            <div class="cnsq-hero__fact">
+              <dt class="cnsq-hero__fact-term">{fact.term}</dt>
+              <dd class="cnsq-hero__fact-detail">{fact.detail}</dd>
+            </div>
+          ))
+        }
+      </dl>
     </div>
-
-    <dl class="cnsq-hero__facts cnsq-reveal">
-      {
-        HERO.facts.map((fact) => (
-          <div class="cnsq-hero__fact">
-            <dt class="cnsq-hero__fact-term">{fact.term}</dt>
-            <dd class="cnsq-hero__fact-detail">{fact.detail}</dd>
-          </div>
-        ))
-      }
-    </dl>
   </div>
-
-  <p class="cnsq-hero__edge" aria-hidden="true">
-    {PROFILE.yearsOfExperience} years in practice · {PROFILE.location}
-  </p>
 
   <div class="cnsq-hero__grid" aria-hidden="true"></div>
 </section>
@@ -91,6 +110,26 @@ import { HERO, PROFILE } from '@/data/site';
       position: relative;
       z-index: 2; // above the decorative specimen grid
       display: grid;
+      gap: var(--csq-space-lg);
+      max-inline-size: none;
+      align-items: center;
+    }
+
+    // Brand mark figure. Zero margin (figure reset lives in _reset, but
+    // this keeps the hero self-sufficient), art-directed per breakpoint.
+    &__figure {
+      margin: 0;
+      max-inline-size: 34rem;
+    }
+
+    &__figure img {
+      inline-size: 100%;
+      block-size: auto;
+      border-radius: var(--csq-radius-md);
+    }
+
+    &__copy {
+      display: grid;
       gap: var(--csq-space-md);
       max-inline-size: none;
     }
@@ -101,8 +140,8 @@ import { HERO, PROFILE } from '@/data/site';
 
     &__title {
       font-size: var(--csq-step-6);
-      line-height: 0.96;
-      letter-spacing: -0.035em;
+      line-height: 1.04;
+      letter-spacing: 0;
       max-inline-size: 16ch;
       margin-block-start: var(--csq-space-2xs);
     }
@@ -144,26 +183,6 @@ import { HERO, PROFILE } from '@/data/site';
       color: var(--csq-paper);
     }
 
-    // Rotated edge label. Decorative duplication of the facts list, hence
-    // aria-hidden in the markup above. Only shown where there is room.
-    &__edge {
-      display: none;
-      position: absolute;
-      inset-block-end: var(--csq-space-xl);
-      inset-inline-end: calc(var(--csq-shell-pad) * 0.4);
-      z-index: 2;
-      writing-mode: vertical-rl;
-      transform: rotate(180deg);
-      font-size: var(--csq-step--2);
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--csq-paper-faint);
-
-      @include mix.from('lg') {
-        display: block;
-      }
-    }
-
     // The specimen grid: 12 hairlines that fade out down the page. Pure
     // background-image, so it is free and cannot shift layout.
     &__grid {
@@ -186,6 +205,24 @@ import { HERO, PROFILE } from '@/data/site';
           transparent 1px calc(100% / 12)
         );
       }
+    }
+  }
+
+  // Desktop: copy left, brand mark right. The figure comes first in DOM
+  // order (brand reads first on mobile) and is visually re-ordered here.
+  @include mix.from('lg') {
+    .cnsq-hero__inner {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: var(--csq-space-2xl);
+    }
+
+    .cnsq-hero__figure {
+      order: 2;
+      max-inline-size: none;
+    }
+
+    .cnsq-hero__copy {
+      order: 1;
     }
   }
 </style>

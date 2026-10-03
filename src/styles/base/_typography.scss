@@ -1,18 +1,15 @@
 ////
 /// cnsqdesigns — typography
 /// =====================================================================
-/// Type is the main aesthetic instrument of this design, so the rules are
-/// deliberate rather than default:
-///   - Bodoni Moda (high-contrast Didone) carries headlines — an editorial
-///     reference to the print side of the practice.
-///   - Archivo (grotesque) carries body/UI text, and is a genuinely
-///     different voice from the display face instead of a lighter weight
-///     of the same family.
-///   - Neither family is a system/AI-default stack (no Inter/Roboto/Arial
-///     body text), which is what makes the site feel designed.
+/// Type voices match the Canva demo site:
+///   - Quicksand (rounded geometric sans) carries headings — friendly and
+///     approachable, as on the demo site.
+///   - Inter (neutral grotesque) carries body/UI text.
 ///
 /// Both families are self-hosted by Astro's Fonts API; the `--csq-font-*`
 /// variables are provided by the <Font /> tags in BaseLayout.astro.
+/// Headings use semibold (600): Quicksand's regular is light by design,
+/// so 600 is its true "heading" voice.
 ////
 
 @use 'abstracts/mixins' as mix;
@@ -29,8 +26,8 @@
 
 :where(h1, h2, h3) {
   font-family: var(--csq-font-display, #{t.$csq-font-display});
-  font-weight: 400;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  letter-spacing: 0;
   line-height: var(--csq-leading-tight);
   color: var(--csq-paper);
 }

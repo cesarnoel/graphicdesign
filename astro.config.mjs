@@ -68,30 +68,23 @@ export default defineConfig({
 
   fonts: [
     {
-      // Display face: a high-contrast Didone. It carries the editorial,
-      // print-heritage character of the brand and is never used for body
-      // copy (it is display-only, so it stays legible at large sizes).
-      //
-      // BYTE-COST NOTE: the Fonts API downloads exactly the variants
-      // declared here and nothing else, so declaring a style the design
-      // does not use is a real cost. An italic file for this family is
-      // ~26 KB, and because the <Font /> component preloads every file of
-      // the font it describes, that weight would land in the critical
-      // path for nothing. Emphasis is carried by the cyan accent,
-      // weight and rhythm instead — so `styles: ['normal']`.
-      name: 'Bodoni Moda',
+      // Headings: Quicksand — rounded geometric sans matching the Canva
+      // demo site's friendly, approachable voice. Weights 500/600/700
+      // cover semibold headings through bold display use.
+      name: 'Quicksand',
       cssVariable: '--csq-font-display',
       provider: fontProviders.google(),
-      weights: [400, 500, 700],
+      weights: [500, 600, 700],
       styles: ['normal'],
       subsets: ['latin'],
-      fallbacks: ['serif'],
+      fallbacks: ['sans-serif'],
       display: 'swap',
     },
     {
-      // Body/UI face: a grotesque with more personality than the usual
-      // system stack, and much better metrics at small sizes.
-      name: 'Archivo',
+      // Body/UI: Inter — neutral grotesque for text, matching the Canva
+      // demo site body voice and the primary site's UI face. 400/500/600
+      // cover body, medium emphasis and semibold UI labels.
+      name: 'Inter',
       cssVariable: '--csq-font-body',
       provider: fontProviders.google(),
       weights: [400, 500, 600],

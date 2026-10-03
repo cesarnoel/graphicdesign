@@ -62,8 +62,8 @@ $csq-accent-halo: rgba(6, 182, 212, 0.25); // glow behind accent elements
 // ---------------------------------------------------------------------
 // Type
 // ---------------------------------------------------------------------
-$csq-font-display: 'Bodoni Moda', 'Didot', 'Times New Roman', serif;
-$csq-font-body: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+$csq-font-display: 'Quicksand', 'Century Gothic', 'Trebuchet MS', sans-serif;
+$csq-font-body: 'Inter', 'Helvetica Neue', Arial, sans-serif;
 
 // Modular scale, fluid between a 320px phone and a 1440px display.
 $csq-step--2: clamp(0.694rem, 0.68rem + 0.07vw, 0.75rem); // legal / labels
