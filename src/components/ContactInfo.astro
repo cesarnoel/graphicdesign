@@ -18,10 +18,13 @@
  *    with the site's own header and footer — and the flow behaves
  *    identically without JavaScript.
  * 4. Contact details are a <dl>: "term + description" is exactly the
- *    semantics of labelled contact data, and every action-able value
- *    (email, phone) is a real link.
+ *    semantics of labelled contact data. Only Email + Studio are shown;
+ *    the Email value is a real mailto: link.
  * 5. Every input has a visible <label> with browser autofill enabled via
  *    `autocomplete` — faster and less error-prone than custom validation.
+ * 6. The details list is two rows (Email, Studio), so the last row keeps
+ *    its hairline and the social block below holds the spacing — no
+ *    orphaned gap from the removed Phone/Hours rows.
  */
 
 import { CONTACT } from '@/data/site';
@@ -53,18 +56,8 @@ const honeypotField = 'cnsq-bot-field';
             </dd>
           </div>
           <div class="cnsq-contact__row">
-            <dt class="cnsq-contact__term">Phone</dt>
-            <dd class="cnsq-contact__value">
-              <a class="cnsq-link" href={`tel:${CONTACT.phoneHref}`}>{CONTACT.phone}</a>
-            </dd>
-          </div>
-          <div class="cnsq-contact__row">
             <dt class="cnsq-contact__term">Studio</dt>
             <dd class="cnsq-contact__value">{CONTACT.location}</dd>
-          </div>
-          <div class="cnsq-contact__row">
-            <dt class="cnsq-contact__term">Hours</dt>
-            <dd class="cnsq-contact__value">{CONTACT.hours}</dd>
           </div>
         </dl>
 

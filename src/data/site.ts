@@ -31,7 +31,7 @@ export interface SectionLink {
 }
 
 export interface SocialLink {
-  readonly platform: 'instagram' | 'facebook' | 'linkedin' | 'behance';
+  readonly platform: 'linkedin';
   /** Accessible name — the visible label is the platform icon only. */
   readonly label: string;
   readonly href: string;
@@ -169,41 +169,19 @@ export const CONTACT = {
   heading: 'Tell me what you are building.',
   standfirst:
     'Send the scope, the timeline and any existing assets. You will get a straight answer on fit, budget range and the next available start date.',
-  /** TODO(copy): confirm the public email address before deploy. */
-  email: `hello@${BRAND_SLUG}.com`,
-  /** TODO(copy): confirm whether a phone number should be published at all. */
-  phone: '+63 82 000 0000',
-  /** Machine-readable form of the same number, for tel: links. */
-  phoneHref: '+63820000000',
+  email: 'cnsqdesigns@gmail.com',
   location: PROFILE.location,
-  /** TODO(copy): confirm realistic working hours. */
-  hours: 'Mon–Fri · 9:00–18:00 PHT',
   /**
    * Netlify Forms: the static HTML form is detected at deploy time, so no
    * server code, no third-party form service and no client JS is needed.
    */
   formName: `${BRAND_SLUG}-contact`,
-  /** TODO(launch): replace with the real profile URLs. */
+  /** LinkedIn is the only published social profile. */
   socials: [
-    {
-      platform: 'instagram',
-      label: `${BRAND_SLUG} on Instagram`,
-      href: 'https://www.instagram.com/',
-    },
-    {
-      platform: 'facebook',
-      label: `${BRAND_SLUG} on Facebook`,
-      href: 'https://www.facebook.com/',
-    },
     {
       platform: 'linkedin',
       label: `${BRAND_SLUG} on LinkedIn`,
-      href: 'https://www.linkedin.com/',
-    },
-    {
-      platform: 'behance',
-      label: `${BRAND_SLUG} on Behance`,
-      href: 'https://www.behance.net/',
+      href: 'https://www.linkedin.com/in/engrcesarnoel/',
     },
   ] satisfies readonly SocialLink[],
 };
