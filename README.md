@@ -127,7 +127,7 @@ no filtering (all items visible), no scroll timelines means no animation.
 `Gallery.astro`, `GalleryItem.astro`, `Lightbox.tsx`. The gallery grid is static
 HTML. `Lightbox.tsx` is a single React island that renders one empty `<dialog>`,
 delegates clicks from the grid and reads slide metadata from `data-*`
-attributes — so metadata exists once, and six images cost one hydration instead
+attributes — so metadata exists once, and nine images cost one hydration instead
 of six. `client:idle` (not `client:visible`) is used deliberately: the dialog is
 `display: none` until opened, so it has no layout box and an
 IntersectionObserver-based directive would never fire.
@@ -179,8 +179,10 @@ so they cannot drift, and `npm run check` fails on a missing field.
 ### 9. Images: extension-agnostic, resolution-failure-proof
 `src/lib/assets.ts`. Entries declare a *base name*; a build-time
 `import.meta.glob` maps it to typed `ImageMetadata` whatever the extension. That
-is what lets this repo ship with placeholder `.png` files and accept the real
-optimised `.jpg`/`.avif` assets as a pure file drop. `requireAsset()` throws at
+is what lets this repo accept artwork as a pure file drop: the gallery and
+portrait sources are now the real exports from the Canva demo site (see
+`scripts/ingest-canva-assets.mjs`), and any future replacement only needs
+to keep the same base names. `requireAsset()` throws at
 build time, so a missing image can never reach production.
 
 ### 10. Motion costs zero JavaScript
@@ -311,10 +313,25 @@ cnsqdesigns-<purpose>[-<nn>].<ext>
 | `public/cnsqdesigns-icon-180.png` | Apple touch icon | `BaseLayout.astro` |
 | `public/cnsqdesigns-resume.pdf` | Resume CTA target | `ABOUT.resume.href` |
 
-### Replacing the placeholders with the real artwork
+### Image provenance: the Canva demo site
 
-The repository currently ships with generated placeholders so that `npm run build`
-is green from commit #1. The real optimised assets have not been provided yet.
+The gallery (9 pieces: 3 web / 3 print / 3 e-book) and the about portrait
+are the real artwork from `https://cnsqdemo.my.canva.site/cnsqdesigns`,
+not placeholders. The Canva page is a client-rendered app, so the images
+were extracted from its `window['bootstrap']` JSON payload (`page.E`
+raster entries — 25 unique media IDs), downloaded at original resolution
+into `.work/canva-img/` (git-ignored), then resized with
+`node scripts/ingest-canva-assets.mjs` (sharp, mozjpeg; 1600px long edge
+for landscape web pieces, 1200px otherwise) into `src/assets/` with
+`cnsqdesigns-*` names. Astro's pipeline then emits the AVIF/WebP/JPEG
+responsive variants at build time. Re-running the ingest only needs the
+`.work/canva-img/` originals.
+
+What remains generated: `public/cnsqdesigns-og.png`,
+`public/cnsqdesigns-icon-180.png` and `public/cnsqdesigns-resume.pdf`
+(still owned by `scripts/generate-placeholders.mjs`).
+
+### Replacing the artwork with final production files
 
 1. Drop the real files into `src/assets/**` keeping the **same base names**
    (`cnsqdesigns-web-01`, `cnsqdesigns-print-01`, …). The extension may change
@@ -526,22 +543,26 @@ npx netlify-cli deploy --prod   # PRODUCTION - only after approval
 
 Stated plainly rather than hidden:
 
-1. **The real Canva content was not provided.** The copy in `src/data/site.ts`
-   and `src/data/gallery.ts` is professional placeholder text written for a
-   Davao City designer. The palette, by contrast, *was* synchronised: it is
+1. **The Canva copy was not ported verbatim.** The Canva demo site is a
+   client-rendered app whose text lives in canvas-positioned JSON nodes, not
+   extractable copy — so the artwork (9 gallery pieces + portrait) was
+   migrated, but the copy in `src/data/site.ts` and the gallery
+   titles/clients remain professional working text for a Davao City
+   designer. The palette, by contrast, *was* synchronised: it is
    extracted from the primary site (`cnsqwordpressengr.netlify.app`) — dark
    navy grounds (`#0f172a`/`#080d1a`/`#172033`), cyan accent (`#22d3ee`) and
    the signature `135deg #2563eb→#06b6d4` gradient — so the portfolio already
    matches the existing brand system. `TODO(copy)` marks the copy items.
-2. **Images and the resume PDF are generated placeholders.**
-   `scripts/generate-placeholders.mjs` writes real PNG/PDF files using Node
-   built-ins only, so the build, the image pipeline and the layout can all be
-   verified before the real optimised assets arrive.
+2. **Only the OG card, touch icon and resume PDF are generated.**
+   `scripts/generate-placeholders.mjs` still writes those three using Node
+   built-ins only. Gallery + portrait are real Canva exports (see *Image
+   provenance* above).
 3. **Lighthouse has not been run** — no Chrome/Chromium binary is available in
    this environment. The measured build report and the budget guard are the
    objective evidence provided instead, and the verification commands are above.
-4. **Client names in the gallery are anonymised** descriptive labels ("Agri-food
-   exporter, Davao"), not fabricated brand names.
+4. **Gallery titles/clients are working labels** ("Canva demo site · Home"),
+   not the final case-study copy — the Canva text was not extractable (see
+   #1). Replace them when the real copy is available.
 5. **A strict Content-Security-Policy is not enabled.** Astro inlines the island
    hydration script, so `script-src 'self'` would silently break the lightbox.
    `netlify.toml` documents the three ways to enable it properly; the other

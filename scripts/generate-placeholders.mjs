@@ -18,7 +18,13 @@
  * minimal single-page PDF writer, deliberately avoiding `sharp`,
  * `canvas` or any other native/image dependency.
  *
- * WHEN THE REAL ASSETS ARRIVE:
+ * NOTE — gallery + portrait artwork are NO LONGER placeholders. They are
+ * real exports from the Canva demo site, ingested with
+ * `node scripts/ingest-canva-assets.mjs` (sources in .work/canva-img/,
+ * which is git-ignored). This script still owns the OG card, the touch
+ * icon and the resume PDF only.
+ *
+ * WHEN THE FINAL PRODUCTION ASSETS ARRIVE:
  *   1. Drop them into src/assets/** keeping the exact same filenames
  *      (see src/data/gallery.ts for the manifest).
  *   2. Delete this script + the `assets:placeholders` npm script.
@@ -280,14 +286,9 @@ function buildResumePdf() {
  * single component or data entry.
  */
 const TARGETS = [
-  { file: 'src/assets/gallery/cnsqdesigns-web-01.png', width: 1600, height: 1000, variant: 0, orientation: 'landscape' },
-  { file: 'src/assets/gallery/cnsqdesigns-web-02.png', width: 1600, height: 1000, variant: 1, orientation: 'landscape' },
-  { file: 'src/assets/gallery/cnsqdesigns-print-01.png', width: 1200, height: 1500, variant: 2, orientation: 'portrait' },
-  { file: 'src/assets/gallery/cnsqdesigns-print-02.png', width: 1200, height: 1500, variant: 0, orientation: 'portrait' },
-  { file: 'src/assets/gallery/cnsqdesigns-ebook-01.png', width: 1400, height: 1200, variant: 1, orientation: 'landscape' },
-  { file: 'src/assets/gallery/cnsqdesigns-ebook-02.png', width: 1400, height: 1200, variant: 2, orientation: 'landscape' },
-  // About-section portrait, 3:4.
-  { file: 'src/assets/brand/cnsqdesigns-portrait.png', width: 900, height: 1200, variant: 2, orientation: 'portrait' },
+  // Gallery + portrait artwork now comes from the Canva demo site ingest
+  // (scripts/ingest-canva-assets.mjs) — only the non-photo assets below
+  // remain generated placeholders.
   // Open Graph / social card — platform convention is 1200x630.
   { file: 'public/cnsqdesigns-og.png', width: 1200, height: 630, variant: 1, orientation: 'landscape' },
   // Apple touch icon — 180x180, referenced by BaseLayout.astro.

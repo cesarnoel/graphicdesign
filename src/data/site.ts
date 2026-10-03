@@ -132,7 +132,7 @@ export const ABOUT = {
    */
   portrait: {
     baseName: 'cnsqdesigns-portrait',
-    alt: 'Portrait of the cnsqdesigns designer working at their table in Davao City.',
+    alt: 'Portrait-format artwork from the cnsqdesigns Canva demo site, used as the about-section portrait.',
   },
   /** The PDF resume CTA. Path is fixed by the file-naming convention. */
   resume: {

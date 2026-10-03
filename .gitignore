@@ -5,6 +5,11 @@ dist/
 .astro/
 node_modules/
 
+# Canva download/scratch workspace (raw originals + bootstrap decodes).
+# The ingested, resized sources live in src/assets/ — this folder is only
+# needed to re-run scripts/ingest-canva-assets.mjs.
+.work/
+
 # Netlify local state
 .netlify/
 
