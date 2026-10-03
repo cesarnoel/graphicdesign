@@ -21,7 +21,13 @@
  *    The <h1> uses the transform-only `.cnsq-lift` variant so the LCP
  *    element is opaque in the first frame (see the note in _motion.scss).
  * 4. One <h1> per page: the hero owns it, sections use <h2>.
- * 5. CTA anchors are plain `href="#id"` links. Smooth scrolling and the
+ * 5. The facts row is a full-width strip BELOW the two-column grid, so
+ *    its hairline rule spans the entire shell — copy column plus image
+ *    column — ending flush with the brand mark's right edge. It is a
+ *    sibling of the grid, not a child of the copy column, which is what
+ *    makes the full-bleed rule possible. On mobile it stays full-width
+ *    under the stacked image + copy.
+ * 6. CTA anchors are plain `href="#id"` links. Smooth scrolling and the
  *    sticky-header offset are handled in CSS (see _reset.scss), so the
  *    navigation works identically with JavaScript disabled.
  */
@@ -71,18 +77,18 @@ const heroMark = requireAsset('cnsqdesigns-hero-mark');
           {HERO.secondaryCta.label}
         </a>
       </div>
-
-      <dl class="cnsq-hero__facts cnsq-reveal">
-        {
-          HERO.facts.map((fact) => (
-            <div class="cnsq-hero__fact">
-              <dt class="cnsq-hero__fact-term">{fact.term}</dt>
-              <dd class="cnsq-hero__fact-detail">{fact.detail}</dd>
-            </div>
-          ))
-        }
-      </dl>
     </div>
+
+    <dl class="cnsq-hero__facts cnsq-reveal">
+      {
+        HERO.facts.map((fact) => (
+          <div class="cnsq-hero__fact">
+            <dt class="cnsq-hero__fact-term">{fact.term}</dt>
+            <dd class="cnsq-hero__fact-detail">{fact.detail}</dd>
+          </div>
+        ))
+      }
+    </dl>
   </div>
 
   <div class="cnsq-hero__grid" aria-hidden="true"></div>
@@ -110,7 +116,7 @@ const heroMark = requireAsset('cnsqdesigns-hero-mark');
       position: relative;
       z-index: 2; // above the decorative specimen grid
       display: grid;
-      gap: var(--csq-space-lg);
+      gap: var(--csq-space-lg) var(--csq-space-2xl);
       max-inline-size: none;
       align-items: center;
     }
@@ -128,14 +134,54 @@ const heroMark = requireAsset('cnsqdesigns-hero-mark');
       border-radius: var(--csq-radius-md);
     }
 
+    // Copy block: centred text. The facts strip below is a sibling grid,
+    // so centring here affects only the eyebrow/headline/standfirst/CTAs.
     &__copy {
       display: grid;
       gap: var(--csq-space-md);
       max-inline-size: none;
+      justify-items: center;
+      text-align: center;
+    }
+
+    &__title {
+      margin-inline: auto;
+    }
+
+    &__standfirst {
+      @include mix.lead;
+
+      margin-inline: auto;
+    }
+
+    &__actions {
+      margin-block-start: var(--csq-space-2xs);
+      justify-content: center;
+    }
+
+    // Facts strip: full shell width (sibling of the two-column grid, so
+    // the hairline runs copy edge to brand-mark edge), content centred.
+    &__facts {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--csq-space-sm) var(--csq-space-lg);
+      margin: var(--csq-space-xl) 0 0;
+      padding-block-start: var(--csq-space-md);
+      border-block-start: 1px solid var(--csq-line);
+      text-align: center;
+    }
+
+    &__fact {
+      display: grid;
+      gap: var(--csq-space-3xs);
+      min-inline-size: 8rem;
+      justify-items: center;
     }
 
     &__eyebrow {
       margin: 0;
+      justify-content: center;
     }
 
     &__title {
@@ -144,30 +190,6 @@ const heroMark = requireAsset('cnsqdesigns-hero-mark');
       letter-spacing: 0;
       max-inline-size: 16ch;
       margin-block-start: var(--csq-space-2xs);
-    }
-
-    &__standfirst {
-      @include mix.lead;
-    }
-
-    &__actions {
-      margin-block-start: var(--csq-space-2xs);
-    }
-
-    // Facts as a real description list, separated by hairlines.
-    &__facts {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--csq-space-sm) var(--csq-space-lg);
-      margin-block-start: var(--csq-space-xl);
-      padding-block-start: var(--csq-space-md);
-      border-block-start: 1px solid var(--csq-line);
-    }
-
-    &__fact {
-      display: grid;
-      gap: var(--csq-space-3xs);
-      min-inline-size: 8rem;
     }
 
     &__fact-term {
@@ -208,12 +230,14 @@ const heroMark = requireAsset('cnsqdesigns-hero-mark');
     }
   }
 
-  // Desktop: copy left, brand mark right. The figure comes first in DOM
-  // order (brand reads first on mobile) and is visually re-ordered here.
+  // Desktop: copy left, brand mark right, facts strip full-width below.
+  // The figure comes first in DOM order (brand reads first on mobile)
+  // and is visually re-ordered here. The facts <dl> is a direct grid
+  // child spanning all columns, so its hairline runs the full shell —
+  // ending flush with the brand mark's right edge.
   @include mix.from('lg') {
     .cnsq-hero__inner {
       grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-      gap: var(--csq-space-2xl);
     }
 
     .cnsq-hero__figure {
@@ -223,6 +247,10 @@ const heroMark = requireAsset('cnsqdesigns-hero-mark');
 
     .cnsq-hero__copy {
       order: 1;
+    }
+
+    .cnsq-hero__facts {
+      grid-column: 1 / -1;
     }
   }
 </style>
