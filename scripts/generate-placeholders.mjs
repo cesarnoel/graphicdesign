@@ -21,8 +21,11 @@
  * NOTE — gallery + portrait artwork are NO LONGER placeholders. They are
  * real exports from the Canva demo site, ingested with
  * `node scripts/ingest-canva-assets.mjs` (sources in .work/canva-img/,
- * which is git-ignored). This script still owns the OG card, the touch
- * icon and the resume PDF only.
+ * which is git-ignored). The brand mark (header + favicon) is the
+ * checked-in vector `public/favicon.svg` /
+ * `src/assets/brand/cnsqdesigns-mark.svg`, written by
+ * `node scripts/write-brand-mark.mjs`. This script still owns the OG
+ * card, the touch icon and the resume PDF only.
  *
  * WHEN THE FINAL PRODUCTION ASSETS ARRIVE:
  *   1. Drop them into src/assets/** keeping the exact same filenames
