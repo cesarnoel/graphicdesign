@@ -13,15 +13,13 @@
  * 2. `loading="lazy"` + `decoding="async"` because the portrait sits below
  *    the fold. Nothing in the About section competes with the hero for the
  *    LCP budget.
- * 3. The resume CTA is a real file in /public, not a dynamic response, so
- *    Netlify serves it from the CDN edge with a long cache lifetime (see
- *    the [[headers]] block in netlify.toml). `type` is emitted as
- *    `application/pdf` so browsers treat it correctly.
- * 4. The asset is resolved by base name through src/lib/assets.ts, which
+ * 3. The asset is resolved by base name through src/lib/assets.ts, which
  *    fails the build if the file is missing — a typo becomes a build error
  *    instead of a broken image in production.
- * 5. `aria-labelledby` on the <section> names the region for assistive
+ * 4. `aria-labelledby` on the <section> names the region for assistive
  *    technology, using the id emitted by SectionHeading.astro.
+ * 5. No resume CTA: the bio ends with the last paragraph, so the copy
+ *    grid closes tight with no trailing button gap.
  */
 
 import { Picture } from 'astro:assets';
@@ -65,10 +63,6 @@ const portrait = requireAsset(ABOUT.portrait.baseName);
             {paragraph}
           </p>
         ))}
-
-        <a class="cnsq-button cnsq-button--ghost cnsq-about__resume" href={ABOUT.resume.href} type="application/pdf">
-          {ABOUT.resume.label}
-        </a>
       </div>
     </div>
   </div>
@@ -119,6 +113,10 @@ const portrait = requireAsset(ABOUT.portrait.baseName);
       align-content: start;
     }
 
+    &__copy > :last-child {
+      margin-block-end: 0;
+    }
+
     &__paragraph {
       max-width: 58ch;
     }
@@ -128,11 +126,6 @@ const portrait = requireAsset(ABOUT.portrait.baseName);
       font-size: var(--csq-step-1);
       line-height: var(--csq-leading-relaxed);
       color: var(--csq-paper);
-    }
-
-    &__resume {
-      justify-self: start;
-      margin-block-start: var(--csq-space-xs);
     }
   }
 
