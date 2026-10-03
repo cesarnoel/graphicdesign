@@ -77,7 +77,7 @@ export default defineConfig({
       // does not use is a real cost. An italic file for this family is
       // ~26 KB, and because the <Font /> component preloads every file of
       // the font it describes, that weight would land in the critical
-      // path for nothing. Emphasis is carried by the vermilion accent,
+      // path for nothing. Emphasis is carried by the cyan accent,
       // weight and rhythm instead — so `styles: ['normal']`.
       name: 'Bodoni Moda',
       cssVariable: '--csq-font-display',

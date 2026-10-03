@@ -27,29 +27,37 @@
 ////
 
 // ---------------------------------------------------------------------
-// Colour — neutral dark grounds
+// Colour — dark navy grounds
 // ---------------------------------------------------------------------
-$csq-ink: #0f0f0e; // page ground
-$csq-ink-deep: #08090a; // wells, lightbox backdrop
-$csq-ink-raised: #15171a; // sticky header, raised surfaces
-$csq-ink-surface: #1f2328; // cards
-$csq-line: #2b2f34; // hairlines (decorative only)
-$csq-line-strong: #565c65; // 3.1:1 vs ink-surface — usable as a UI boundary
+// ARCHITECTURAL DECISION — palette synchronised with the primary site
+// (cnsqwordpressengr.netlify.app, dark theme). Extracted 2026-10 from that
+// site's compiled CSS: slate-900 page ground, a deeper navy for wells and
+// the scrolled header, and a #172033 card surface. The accents follow the
+// primary site's dark-mode usage: cyan for text-level accents and a
+// blue→cyan signature gradient for display moments.
+$csq-ink: #0f172a; // slate-900 — page ground
+$csq-ink-deep: #080d1a; // wells, lightbox backdrop, CTA banner
+$csq-ink-raised: #101a30; // sticky header, raised surfaces
+$csq-ink-surface: #172033; // cards, form panel
+$csq-line: #273044; // hairlines (decorative only)
+$csq-line-strong: #64748b; // slate-500 — 3.7:1 vs ink, 3.4:1 vs ink-surface
 
 // ---------------------------------------------------------------------
 // Colour — paper (foreground)
 // ---------------------------------------------------------------------
-$csq-paper: #f5f2ec; // 17.2:1 vs ink
-$csq-paper-muted: #a6a9ae; // 8.0:1 vs ink  — body/secondary text
-$csq-paper-faint: #7c8189; // 4.6:1 vs ink  — small print only
+$csq-paper: #f8fafc; // slate-50 — 17.0:1 vs ink
+$csq-paper-muted: #cbd5e1; // slate-300 — 11.9:1 vs ink — body/secondary text
+$csq-paper-faint: #94a3b8; // slate-400 — 6.9:1 vs ink — small print only
 
 // ---------------------------------------------------------------------
-// Colour — accent (single sharp note)
+// Colour — accent (cyan + signature blue→cyan gradient)
 // ---------------------------------------------------------------------
-$csq-accent: #ef5333; // 5.4:1 vs ink, 5.2:1 vs ink-raised — body-safe
-$csq-accent-deep: #c8401f; // large text / decorative only
-$csq-accent-veil: rgba(239, 83, 51, 0.12); // tint fills, never a text bg
-$csq-accent-halo: rgba(239, 83, 51, 0.28); // glow behind accent elements
+$csq-accent: #22d3ee; // cyan-400 — 9.8:1 vs ink, the dark-mode accent
+$csq-accent-deep: #06b6d4; // cyan-500 — large/decorative gradient end
+$csq-accent-blue: #2563eb; // blue-600 — gradient start, 3.5:1 vs ink (large only)
+$csq-accent-gradient: linear-gradient(135deg, #2563eb, #06b6d4); // signature
+$csq-accent-veil: rgba(34, 211, 238, 0.1); // tint fills, never a text bg
+$csq-accent-halo: rgba(6, 182, 212, 0.25); // glow behind accent elements
 
 // ---------------------------------------------------------------------
 // Type

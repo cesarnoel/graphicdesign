@@ -29,7 +29,8 @@
   overflow: hidden;
 
   &::backdrop {
-    background-color: rgba(6, 6, 7, 0.88);
+    // Navy wash matching --csq-ink-deep, so the page dimming stays on-palette.
+    background-color: rgba(8, 13, 26, 0.88);
     backdrop-filter: blur(8px);
   }
 

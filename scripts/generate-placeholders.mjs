@@ -37,16 +37,16 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /* ------------------------------------------------------------------ *
  * Brand palette (mirror of src/styles/abstracts/_tokens.scss).
+ * Synchronised with the primary site's dark navy theme.
  * Kept as plain RGB tuples because PNG pixels need 8-bit channels.
  * ------------------------------------------------------------------ */
-const INK = [15, 15, 14];
-const INK_RAISED = [21, 23, 26];
-const INK_SURFACE = [31, 35, 40];
-const LINE = [64, 69, 76];
-const PAPER = [245, 242, 236];
-const PAPER_MUTED = [166, 169, 174];
-const ACCENT = [239, 83, 51];
-const ACCENT_DEEP = [200, 64, 31];
+const INK = [15, 23, 42]; // #0f172a slate-900 page ground
+const INK_RAISED = [16, 26, 48]; // #101a30 raised surfaces
+const INK_SURFACE = [23, 32, 51]; // #172033 cards
+const LINE = [51, 65, 85]; // #334155 slate-700 hairlines
+const PAPER_MUTED = [203, 213, 225]; // #cbd5e1 slate-300
+const BLUE = [37, 99, 235]; // #2563eb blue-600 — gradient start
+const CYAN = [6, 182, 212]; // #06b6d4 cyan-500 — gradient end
 
 /* ------------------------------------------------------------------ *
  * PNG encoder
@@ -120,8 +120,12 @@ const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
 
 /**
  * Every placeholder shares the same "press specimen sheet" language:
- * a faint diagonal paper tooth, an inner hairline frame, registration
- * corner marks, one dominance block and a single vermilion accent bar.
+ * a faint paper tooth, two ambient radial glows (the primary site's
+ * blue/cyan blob motif), an inner hairline frame, registration corner
+ * marks, one dominance card and the signature blue→cyan accent bar.
+ *
+ * The glows and the bar are what make a tile read as intentional
+ * artwork at thumbnail size instead of a flat, near-empty rectangle.
  * Variety comes from `variant`, so all six gallery entries are
  * instantly distinguishable while staying on brand.
  */
@@ -133,6 +137,21 @@ function specimen({ variant, orientation }) {
   ];
   const scheme = blocks[variant % blocks.length];
   const weight = orientation === 'portrait' ? variant + 1 : variant;
+
+  // Glow centres vary per variant so each tile is unique, echoing the
+  // ambient radial "blob" gradients on the primary site.
+  const GLOWS_A = [
+    { x: 0.18, y: 0.16, strength: 0.5 },
+    { x: 0.82, y: 0.2, strength: 0.44 },
+    { x: 0.5, y: 0.12, strength: 0.48 },
+  ];
+  const GLOWS_B = [
+    { x: 0.84, y: 0.86, strength: 0.56 },
+    { x: 0.16, y: 0.9, strength: 0.46 },
+    { x: 0.9, y: 0.6, strength: 0.42 },
+  ];
+  const glowA = { ...GLOWS_A[variant % 3], colour: BLUE };
+  const glowB = { ...GLOWS_B[weight % 3], colour: CYAN };
 
   const INSET = 0.08;
   const ARM = 0.05;
@@ -150,16 +169,28 @@ function specimen({ variant, orientation }) {
     // 1. Paper tooth — keeps large flat areas from looking dead.
     let px = mix(INK, INK_RAISED, (x + y) % 14 < 1 ? 1 : 0.35);
 
-    // 2. Dominance block.
-    const [x0, y0, x1, y1] = scheme.rect;
-    if (u > x0 && u < x1 && v > y0 && v < y1) px = scheme.fill;
-
-    // 3. Vermilion accent bar — the one sharp colour note.
-    if (v > scheme.bar && v < scheme.bar + 0.014 && u > INSET && u < 1 - INSET) {
-      px = weight % 2 === 0 ? ACCENT : ACCENT_DEEP;
+    // 2. Ambient glows — radial falloff, bounded so most pixels skip it.
+    for (const g of [glowA, glowB]) {
+      const dx = u - g.x;
+      const dy = v - g.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < 0.35) px = mix(px, g.colour, g.strength * Math.exp(-d2 * 3.2));
     }
 
-    // 4. Inner hairline frame.
+    // 3. Dominance card with a 1px slate edge so it separates from the glows.
+    const [x0, y0, x1, y1] = scheme.rect;
+    if (u > x0 && u < x1 && v > y0 && v < y1) {
+      px = scheme.fill;
+      const edge = 0.0022;
+      if (u - x0 < edge || x1 - u < edge || v - y0 < edge || y1 - v < edge) px = LINE;
+    }
+
+    // 4. Signature accent bar — blue→cyan, the site's motif.
+    if (v > scheme.bar && v < scheme.bar + 0.028 && u > INSET && u < 1 - INSET) {
+      px = mix(BLUE, CYAN, (u - INSET) / (1 - 2 * INSET));
+    }
+
+    // 5. Inner hairline frame.
     const hair = 0.0035;
     const nearV = Math.abs(u - INSET) < hair || Math.abs(u - (1 - INSET)) < hair;
     const nearH = Math.abs(v - INSET) < hair || Math.abs(v - (1 - INSET)) < hair;
@@ -167,7 +198,7 @@ function specimen({ variant, orientation }) {
       px = LINE;
     }
 
-    // 5. Registration marks — print-studio motif, drawn pointing inward.
+    // 6. Registration marks — print-studio motif, drawn pointing inward.
     for (const [cx, cy] of CORNERS) {
       const inwardX = cx < 0.5 ? u > cx : u < cx;
       const inwardY = cy < 0.5 ? v > cy : v < cy;

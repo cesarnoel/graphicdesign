@@ -15,7 +15,7 @@ site, deployed on Netlify. No page builder, no third-party runtime, no analytics
 | Lighthouse ≥ 90 (mobile + desktop) | Static output, no third-party requests, self-hosted fonts, LCP is text, one small deferred island, measured budget guard (`npm run report`) |
 | Graceful degradation without JavaScript | Every section is server-rendered HTML. Filtering, smooth-scroll nav, sticky header and mobile nav are pure CSS. The lightbox degrades to "open the full-size image" |
 | Responsive mobile-first layout | `@include mix.from(...)` min-width breakpoints, fluid `clamp()` type and spacing, 320px → 1440px+, no horizontal scroll |
-| Brand identity preserved | Dark neutral palette with one vermilion accent, "cnsqdesigns" naming enforced in data, filenames and CSS |
+| Brand identity preserved | Dark navy palette with cyan accent and the signature blue→cyan gradient, synchronised with cnsqwordpressengr.netlify.app; "cnsqdesigns" naming enforced in data, filenames and CSS |
 | Astro / React / SASS only | 5 runtime deps, all first-party Astro or React. No Tailwind, no GSAP, no icon pack, no form vendor |
 
 ---
@@ -202,24 +202,28 @@ CAPTCHA. Spam is handled with a honeypot field. Submission redirects to a real
 
 ## Design system
 
-### Colour — dark theme, neutral grounds, one sharp accent
+### Colour — dark navy theme, cyan accent, signature blue→cyan gradient
 
-Asserted once in `src/styles/abstracts/_tokens.scss`, published once in
-`base/_root.scss`. Components must never introduce a raw hex value.
+Synchronised with the primary site (`cnsqwordpressengr.netlify.app`) whose
+compiled CSS was the extraction source. Asserted once in
+`src/styles/abstracts/_tokens.scss`, published once in `base/_root.scss`.
+Components must never introduce a raw hex value.
 
 | Token | Value | Role | Contrast |
 | --- | --- | --- | --- |
-| `--csq-ink` | `#0f0f0e` | Page ground (neutral, non-tinted) | — |
-| `--csq-ink-deep` | `#08090a` | Lightbox backdrop, wells | — |
-| `--csq-ink-raised` | `#15171a` | Sticky header, raised sections | — |
-| `--csq-ink-surface` | `#1f2328` | Cards, form panel | — |
-| `--csq-line` | `#2b2f34` | Hairlines (decorative) | — |
-| `--csq-line-strong` | `#565c65` | UI boundaries | 3.1:1 |
-| `--csq-paper` | `#f5f2ec` | Primary text | 17.2:1 |
-| `--csq-paper-muted` | `#a6a9ae` | Body/secondary text | 8.0:1 |
-| `--csq-paper-faint` | `#6f747b`/`#7c8189` | Small print | 4.6:1+ |
-| `--csq-accent` | `#ef5333` | The single accent | 5.4:1 on ink, 5.2:1 on raised |
-| `--csq-accent-deep` | `#c8401f` | Large/decorative only | — |
+| `--csq-ink` | `#0f172a` | Page ground (slate-900 navy) | — |
+| `--csq-ink-deep` | `#080d1a` | Lightbox backdrop, wells, CTA banner | — |
+| `--csq-ink-raised` | `#101a30` | Sticky header, raised sections | — |
+| `--csq-ink-surface` | `#172033` | Cards, form panel | — |
+| `--csq-line` | `#273044` | Hairlines (decorative) | — |
+| `--csq-line-strong` | `#64748b` | UI boundaries (slate-500) | 3.4:1 |
+| `--csq-paper` | `#f8fafc` | Primary text (slate-50) | 17.0:1 |
+| `--csq-paper-muted` | `#cbd5e1` | Body/secondary text (slate-300) | 11.9:1 |
+| `--csq-paper-faint` | `#94a3b8` | Small print (slate-400) | 6.9:1 |
+| `--csq-accent` | `#22d3ee` | The dark-mode accent (cyan-400) | 9.8:1 on ink |
+| `--csq-accent-deep` | `#06b6d4` | Gradient end / decorative only | — |
+| `--csq-accent-blue` | `#2563eb` | Gradient start (large/decorative) | 3.5:1 on ink |
+| `--csq-accent-gradient` | `linear-gradient(135deg, #2563eb, #06b6d4)` | Signature display motif | — |
 
 Ratios are annotated in the token file. Text stays ≥ 4.5:1 and UI boundaries
 ≥ 3:1. `prefers-contrast: more` brightens paper, strengthens hairlines, drops the
@@ -239,8 +243,9 @@ Deliberately not Inter/Roboto/Arial/system-font body text. The fluid scale
 
 One motif, repeated: a **registration diamond in a hairline square**, borrowed
 from print alignment marks, appears in the favicon, the wordmark, the social
-links, the service deliverables and the placeholder artwork. Vermilion is used
-only for emphasis, never as a large fill behind text.
+links, the service deliverables and the placeholder artwork. Cyan and the
+blue→cyan gradient are used only for emphasis, never as a large fill behind
+body text.
 
 ### Motion
 
@@ -521,12 +526,13 @@ npx netlify-cli deploy --prod   # PRODUCTION - only after approval
 
 Stated plainly rather than hidden:
 
-1. **The real Canva content and palette were not provided.** The copy in
-   `src/data/site.ts` and `src/data/gallery.ts` is professional placeholder text
-   written for a Davao City designer; the palette is a dark neutral system with a
-   single vermilion accent (`#ef5333`) as the brief describes. Both are structured
-   so the verbatim Canva wording and the exact brand hex values can be dropped in
-   without touching markup. `TODO(copy)` marks each item.
+1. **The real Canva content was not provided.** The copy in `src/data/site.ts`
+   and `src/data/gallery.ts` is professional placeholder text written for a
+   Davao City designer. The palette, by contrast, *was* synchronised: it is
+   extracted from the primary site (`cnsqwordpressengr.netlify.app`) — dark
+   navy grounds (`#0f172a`/`#080d1a`/`#172033`), cyan accent (`#22d3ee`) and
+   the signature `135deg #2563eb→#06b6d4` gradient — so the portfolio already
+   matches the existing brand system. `TODO(copy)` marks the copy items.
 2. **Images and the resume PDF are generated placeholders.**
    `scripts/generate-placeholders.mjs` writes real PNG/PDF files using Node
    built-ins only, so the build, the image pipeline and the layout can all be
@@ -554,8 +560,9 @@ Stated plainly rather than hidden:
   `@astrojs/sitemap`, `react`, `react-dom` (plus `sass`, `typescript`,
   `@astrojs/check` and `@types/*` as dev tooling). No UI kit, no CSS framework, no
   animation library, no icon package, no form vendor, no image library.
-- **Palette not modified**: one dark neutral system, asserted in a single token
-  file; components reference `var(--csq-*)` and never a raw hex.
+- **Palette matches the primary site**: one dark navy system (extracted from
+  cnsqwordpressengr.netlify.app), asserted in a single token file; components
+  reference `var(--csq-*)` and never a raw hex.
 - **Naming conventions intact**: `cnsqdesigns` in the brand, DOM ids, data module,
   filenames, form name and asset names — enforced in CSS, not just by convention.
 - **Accessibility not compromised**: semantic landmarks, mandatory alt text, named

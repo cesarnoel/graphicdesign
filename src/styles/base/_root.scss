@@ -39,6 +39,8 @@
   // --- accent --------------------------------------------------------
   --csq-accent: #{t.$csq-accent};
   --csq-accent-deep: #{t.$csq-accent-deep};
+  --csq-accent-blue: #{t.$csq-accent-blue};
+  --csq-accent-gradient: #{t.$csq-accent-gradient};
   --csq-accent-veil: #{t.$csq-accent-veil};
   --csq-accent-halo: #{t.$csq-accent-halo};
 
@@ -101,6 +103,6 @@
     --csq-paper-muted: #{t.$csq-paper};
     --csq-paper-faint: #{t.$csq-paper-muted};
     --csq-line: #{t.$csq-line-strong};
-    --csq-accent: #ff6a4a;
+    --csq-accent: #67e8f9; // cyan-300 — brighter for the high-contrast request
   }
 }
