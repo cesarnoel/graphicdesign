@@ -17,12 +17,13 @@
  *    built with CSS scroll-driven animations (`animation-timeline:
  *    scroll()`). It is pure decoration (`aria-hidden`), costs no JS, and
  *    is skipped entirely where the feature is unsupported.
- * 4. The resume CTA is a plain anchor. `download` is deliberately omitted
- *    so the PDF opens in the browser's viewer, while the visually hidden
- *    "(PDF)" suffix tells screen-reader users what to expect.
+ * 4. No resume CTA: the header is brand + section links only. The nav
+ *    sits at the far end of the bar (where the old Resume button was)
+ *    and its link text shares a baseline with the wordmark text, so the
+ *    row reads as one line, not two vertically-centred blocks.
  */
 
-import { ABOUT, SECTIONS } from '@/data/site';
+import { SECTIONS } from '@/data/site';
 import Wordmark from '@/components/Wordmark.astro';
 ---
 
@@ -43,10 +44,6 @@ import Wordmark from '@/components/Wordmark.astro';
         }
       </ul>
     </nav>
-
-    <a class="cnsq-button cnsq-button--ghost cnsq-header__cta" href={ABOUT.resume.href}>
-      Resume<span class="cnsq-visually-hidden"> (PDF)</span>
-    </a>
   </div>
 
   <span class="cnsq-header__progress" aria-hidden="true"></span>
@@ -76,14 +73,18 @@ import Wordmark from '@/components/Wordmark.astro';
 
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
+      // Text baseline shared with the wordmark: the nav links read as one
+      // line with the site name rather than a vertically-centred block.
+      align-items: baseline;
       gap: var(--csq-space-sm) var(--csq-space-md);
       min-block-size: var(--csq-header-block);
       padding-block: var(--csq-space-xs);
     }
 
     // The nav rail: full width on small screens (ordered to the second
-    // row), a plain inline flex list from the md breakpoint up.
+    // row); from md up it sits at the far (inline-end) of the bar — the
+    // spot the old Resume button held — with its items baseline-aligned
+    // to the wordmark text.
     &__nav {
       order: 3;
       flex: 1 0 100%;
@@ -99,8 +100,9 @@ import Wordmark from '@/components/Wordmark.astro';
 
       @include mix.from('md') {
         order: 2;
-        flex: 1 1 auto;
-        margin-inline: 0;
+        flex: 0 1 auto;
+        margin-inline-start: auto;
+        margin-inline-end: 0;
         padding-inline: 0;
         overflow: visible;
         mask-image: none;
@@ -113,7 +115,7 @@ import Wordmark from '@/components/Wordmark.astro';
 
     &__list {
       display: flex;
-      align-items: center;
+      align-items: baseline;
       gap: var(--csq-space-md);
       white-space: nowrap;
     }
@@ -128,6 +130,10 @@ import Wordmark from '@/components/Wordmark.astro';
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--csq-paper-muted);
+      // Shares the text baseline with the wordmark: no extra leading that
+      // would push the glyph box off the site-name baseline.
+      line-height: 1;
+      vertical-align: baseline;
       transition: color var(--csq-dur-fast) var(--csq-ease-out);
 
       // Underline grows from the left on hover — the same gesture as the
@@ -152,17 +158,6 @@ import Wordmark from '@/components/Wordmark.astro';
             transform: scaleX(1);
           }
         }
-      }
-    }
-
-    &__cta {
-      order: 2;
-      margin-inline-start: auto;
-      padding-inline: var(--csq-space-sm);
-
-      @include mix.from('md') {
-        order: 3;
-        margin-inline-start: 0;
       }
     }
 

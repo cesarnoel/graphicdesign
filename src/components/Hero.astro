@@ -21,12 +21,10 @@
  *    The <h1> uses the transform-only `.cnsq-lift` variant so the LCP
  *    element is opaque in the first frame (see the note in _motion.scss).
  * 4. One <h1> per page: the hero owns it, sections use <h2>.
- * 5. The facts row is a full-width strip BELOW the two-column grid, so
- *    its hairline rule spans the entire shell — copy column plus image
- *    column — ending flush with the brand mark's right edge. It is a
- *    sibling of the grid, not a child of the copy column, which is what
- *    makes the full-bleed rule possible. On mobile it stays full-width
- *    under the stacked image + copy.
+ * 5. The facts row lives INSIDE the copy column, directly under the
+ *    CTAs (the original position) — left-aligned with the headline and
+ *    separated from the buttons by a hairline. It is not a full-width
+ *    sibling strip, so there is no stranded gap above the headline.
  * 6. CTA anchors are plain `href="#id"` links. Smooth scrolling and the
  *    sticky-header offset are handled in CSS (see _reset.scss), so the
  *    navigation works identically with JavaScript disabled.
@@ -77,18 +75,18 @@ const heroMark = requireAsset('cnsqdesigns-hero-mark');
           {HERO.secondaryCta.label}
         </a>
       </div>
-    </div>
 
-    <dl class="cnsq-hero__facts cnsq-reveal">
-      {
-        HERO.facts.map((fact) => (
-          <div class="cnsq-hero__fact">
-            <dt class="cnsq-hero__fact-term">{fact.term}</dt>
-            <dd class="cnsq-hero__fact-detail">{fact.detail}</dd>
-          </div>
-        ))
-      }
-    </dl>
+      <dl class="cnsq-hero__facts cnsq-reveal">
+        {
+          HERO.facts.map((fact) => (
+            <div class="cnsq-hero__fact">
+              <dt class="cnsq-hero__fact-term">{fact.term}</dt>
+              <dd class="cnsq-hero__fact-detail">{fact.detail}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
   </div>
 
   <div class="cnsq-hero__grid" aria-hidden="true"></div>
@@ -102,12 +100,12 @@ const heroMark = requireAsset('cnsqdesigns-hero-mark');
     position: relative;
     overflow: hidden;
     display: grid;
-    // Bottom-aligned content inside a full-height block: the headline sits
-    // low on the page, which is what gives the opening screen its
-    // editorial weight instead of the usual centred splash.
-    align-content: end;
-    min-block-size: calc(100svh - var(--csq-header-block));
-    padding-block: clamp(var(--csq-space-2xl), 14vh, var(--csq-space-3xl)) var(--csq-space-xl);
+    // Compact opening block: content starts directly under the header.
+    // (Previously full-viewport with bottom-aligned content, which left
+    // the big empty gap above the headline.)
+    align-content: start;
+    min-block-size: auto;
+    padding-block: var(--csq-space-xl) var(--csq-space-xl);
     border-block-end: 1px solid var(--csq-line);
 
     &__inner {
@@ -159,24 +157,22 @@ const heroMark = requireAsset('cnsqdesigns-hero-mark');
       justify-content: start;
     }
 
-    // Facts strip: full shell width (sibling of the two-column grid, so
-    // the hairline runs copy edge to brand-mark edge), content centred.
+    // Facts row: sits inside the copy column, directly under the CTAs —
+    // the original position. Left-aligned with the headline, separated
+    // from the buttons by a hairline.
     &__facts {
       display: flex;
       flex-wrap: wrap;
-      justify-content: center;
       gap: var(--csq-space-sm) var(--csq-space-lg);
-      margin: var(--csq-space-xl) 0 0;
+      margin: var(--csq-space-md) 0 0;
       padding-block-start: var(--csq-space-md);
       border-block-start: 1px solid var(--csq-line);
-      text-align: center;
     }
 
     &__fact {
       display: grid;
       gap: var(--csq-space-3xs);
       min-inline-size: 8rem;
-      justify-items: center;
     }
 
     &__eyebrow {
@@ -230,11 +226,10 @@ const heroMark = requireAsset('cnsqdesigns-hero-mark');
     }
   }
 
-  // Desktop: copy left, brand mark right, facts strip full-width below.
-  // The figure comes first in DOM order (brand reads first on mobile)
-  // and is visually re-ordered here. The facts <dl> is a direct grid
-  // child spanning all columns, so its hairline runs the full shell —
-  // ending flush with the brand mark's right edge.
+  // Desktop: copy left, brand mark right. The figure comes first in DOM
+  // order (brand reads first on mobile) and is visually re-ordered here.
+  // The facts <dl> stays inside the copy column under the CTAs, so no
+  // extra grid placement is needed.
   @include mix.from('lg') {
     .cnsq-hero__inner {
       grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
@@ -247,10 +242,6 @@ const heroMark = requireAsset('cnsqdesigns-hero-mark');
 
     .cnsq-hero__copy {
       order: 1;
-    }
-
-    .cnsq-hero__facts {
-      grid-column: 1 / -1;
     }
   }
 </style>
