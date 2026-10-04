@@ -18,7 +18,7 @@
  *    critical path.
  */
 
-import { PROFILE, SITE } from '@/data/site';
+import { CONTACT, PROFILE, SITE } from '@/data/site';
 
 export interface Props {
   /** Full document title. Keep the brand suffix for consistent SERP branding. */
@@ -62,7 +62,9 @@ const structuredData = {
       name: PROFILE.name,
       jobTitle: PROFILE.jobTitle,
       url: SITE.url,
-      email: `mailto:hello@${SITE.name}.com`,
+      // Sourced from CONTACT.email so the JSON-LD can never drift from the
+      // visible mailto: link in ContactInfo.astro.
+      email: `mailto:${CONTACT.email}`,
       address: {
         '@type': 'PostalAddress',
         addressLocality: 'Davao City',
