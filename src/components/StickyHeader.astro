@@ -73,9 +73,12 @@ import Wordmark from '@/components/Wordmark.astro';
 
       display: flex;
       flex-wrap: wrap;
-      // Text baseline shared with the wordmark: the nav links read as one
-      // line with the site name rather than a vertically-centred block.
-      align-items: baseline;
+      // Both the wordmark link and the nav links are exactly 2.5rem boxes
+      // with their text centred inside, so centre-aligning the boxes puts
+      // the site name and the menu on one optical line. (Baseline-align
+      // would not work here: the wordmark's inline-flex baseline falls to
+      // the image's bottom edge, not the text's.)
+      align-items: center;
       gap: var(--csq-space-sm) var(--csq-space-md);
       min-block-size: var(--csq-header-block);
       padding-block: var(--csq-space-xs);
@@ -115,7 +118,7 @@ import Wordmark from '@/components/Wordmark.astro';
 
     &__list {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       gap: var(--csq-space-md);
       white-space: nowrap;
     }
@@ -123,27 +126,31 @@ import Wordmark from '@/components/Wordmark.astro';
     &__link {
       @include mix.focus-ring;
 
+      position: relative;
       display: inline-block;
-      padding-block: var(--csq-space-2xs);
+      // Same 2.5rem box as the wordmark's md mark (40px), with the text
+      // centred in it — this is what keeps the menu and the site name on
+      // one optical line regardless of font or size.
+      min-block-size: 2.5rem;
+      line-height: 2.5rem;
       font-size: var(--csq-step--1);
       font-weight: 500;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--csq-paper-muted);
-      // Shares the text baseline with the wordmark: no extra leading that
-      // would push the glyph box off the site-name baseline.
-      line-height: 1;
-      vertical-align: baseline;
       transition: color var(--csq-dur-fast) var(--csq-ease-out);
 
       // Underline grows from the left on hover — the same gesture as the
       // inline prose links, so the header reads as part of one system.
+      // Absolutely positioned so it never adds height to the link's box
+      // (which would break the alignment with the wordmark).
       &::after {
         content: '';
-        display: block;
+        position: absolute;
+        inset-block-end: 0.35rem;
+        inset-inline-start: 0;
         block-size: 1px;
         inline-size: 100%;
-        margin-block-start: 0.35rem;
         background-color: var(--csq-accent);
         transform: scaleX(0);
         transform-origin: left center;

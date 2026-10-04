@@ -94,14 +94,6 @@
     margin-block-end: var(--csq-space-3xs);
   }
 
-  &__meta {
-    @include mix.eyebrow;
-
-    font-size: var(--csq-step--2);
-    color: var(--csq-accent);
-    margin-block-end: var(--csq-space-2xs);
-  }
-
   &__summary {
     font-size: var(--csq-step--1);
     color: var(--csq-paper-muted);

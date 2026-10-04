@@ -57,7 +57,6 @@ const captionId = `gallery-item-${item.baseName}-caption`;
     data-lightbox-position={position}
     data-lightbox-src={lightboxImage.src}
     data-lightbox-title={item.title}
-    data-lightbox-meta={`${item.client} · ${item.year}`}
     data-lightbox-summary={item.summary}
     data-lightbox-width={lightboxImage.attributes.width}
     data-lightbox-height={lightboxImage.attributes.height}
@@ -80,7 +79,6 @@ const captionId = `gallery-item-${item.baseName}-caption`;
 
   <div class="cnsq-gallery__caption" id={captionId}>
     <h3 class="cnsq-gallery__title">{item.title}</h3>
-    <p class="cnsq-gallery__meta">{item.client} · {item.year}</p>
     <ul class="cnsq-gallery__tags">
       {item.tags.map((tag) => <li class="cnsq-gallery__tag">{tag}</li>)}
     </ul>
@@ -190,13 +188,6 @@ const captionId = `gallery-item-${item.baseName}-caption`;
     &__title {
       font-size: var(--csq-step-1);
       line-height: var(--csq-leading-snug);
-    }
-
-    &__meta {
-      font-size: var(--csq-step--2);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--csq-paper-faint);
     }
 
     &__tags {

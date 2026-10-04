@@ -44,8 +44,6 @@ export interface GalleryEntry {
   /** File base name in src/assets/gallery (no extension). */
   readonly baseName: string;
   readonly title: string;
-  readonly client: string;
-  readonly year: string;
   readonly category: GalleryCategory;
   /** One-line description shown in the lightbox and under the thumbnail. */
   readonly summary: string;
@@ -56,7 +54,7 @@ export interface GalleryEntry {
 }
 
 /**
- * TODO(copy): project names/clients are working titles carried over from
+ * TODO(copy): titles/summaries/tags are working titles carried over from
  * the scaffold until the Canva case-study copy is ported. Only the
  * `baseName`, `category` and `alt` fields are structural — edit everything
  * else freely. Artwork files are the real exports from the Canva demo site
@@ -67,8 +65,6 @@ export const GALLERY: readonly GalleryEntry[] = [
   {
     baseName: 'cnsqdesigns-web-01',
     title: 'Portfolio hero composition',
-    client: 'Canva demo site · Home',
-    year: '2025',
     category: 'web',
     summary: 'Wide landscape hero artwork from the demo site home section.',
     alt: 'Wide landscape web artwork from the cnsqdesigns Canva demo site home section.',
@@ -77,8 +73,6 @@ export const GALLERY: readonly GalleryEntry[] = [
   {
     baseName: 'cnsqdesigns-web-02',
     title: 'Landscape feature artwork',
-    client: 'Canva demo site · Home',
-    year: '2025',
     category: 'web',
     summary: 'Second landscape feature piece from the demo site home section.',
     alt: 'Second wide landscape web artwork from the cnsqdesigns Canva demo site home section.',
@@ -87,8 +81,6 @@ export const GALLERY: readonly GalleryEntry[] = [
   {
     baseName: 'cnsqdesigns-web-03',
     title: 'Editorial web artwork',
-    client: 'Canva demo site · Home',
-    year: '2025',
     category: 'web',
     summary: 'Large editorial landscape artwork from the demo site.',
     alt: 'Large landscape editorial artwork from the cnsqdesigns Canva demo site.',
@@ -97,8 +89,6 @@ export const GALLERY: readonly GalleryEntry[] = [
   {
     baseName: 'cnsqdesigns-print-01',
     title: 'Portrait print piece',
-    client: 'Canva demo site · Portfolio',
-    year: '2025',
     category: 'print',
     summary: 'Portrait-format print artwork from the demo site portfolio section.',
     alt: 'Portrait-format print artwork from the cnsqdesigns Canva demo site portfolio section.',
@@ -107,8 +97,6 @@ export const GALLERY: readonly GalleryEntry[] = [
   {
     baseName: 'cnsqdesigns-print-02',
     title: 'Tall editorial print',
-    client: 'Canva demo site · Portfolio',
-    year: '2025',
     category: 'print',
     summary: 'Tall portrait editorial piece from the demo site portfolio section.',
     alt: 'Tall portrait editorial print artwork from the cnsqdesigns Canva demo site portfolio section.',
@@ -117,8 +105,6 @@ export const GALLERY: readonly GalleryEntry[] = [
   {
     baseName: 'cnsqdesigns-print-03',
     title: 'Square brand mark study',
-    client: 'Canva demo site · Portfolio',
-    year: '2025',
     category: 'print',
     summary: 'Square brand-mark study from the demo site portfolio section.',
     alt: 'Square brand mark study artwork from the cnsqdesigns Canva demo site portfolio section.',
@@ -127,8 +113,6 @@ export const GALLERY: readonly GalleryEntry[] = [
   {
     baseName: 'cnsqdesigns-ebook-01',
     title: 'E-book portrait spread',
-    client: 'Canva demo site · Portfolio',
-    year: '2025',
     category: 'ebook',
     summary: 'Portrait e-book artwork from the demo site portfolio section.',
     alt: 'Portrait e-book artwork from the cnsqdesigns Canva demo site portfolio section.',
@@ -137,8 +121,6 @@ export const GALLERY: readonly GalleryEntry[] = [
   {
     baseName: 'cnsqdesigns-ebook-02',
     title: 'E-book feature artwork',
-    client: 'Canva demo site · Portfolio',
-    year: '2025',
     category: 'ebook',
     summary: 'Portrait e-book feature piece from the demo site portfolio section.',
     alt: 'Portrait e-book feature artwork from the cnsqdesigns Canva demo site portfolio section.',
@@ -147,8 +129,6 @@ export const GALLERY: readonly GalleryEntry[] = [
   {
     baseName: 'cnsqdesigns-ebook-03',
     title: 'E-book landscape spread',
-    client: 'Canva demo site · Portfolio',
-    year: '2025',
     category: 'ebook',
     summary: 'Landscape e-book spread artwork from the demo site portfolio section.',
     alt: 'Landscape e-book spread artwork from the cnsqdesigns Canva demo site portfolio section.',

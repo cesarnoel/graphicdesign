@@ -44,7 +44,6 @@ import type {
 interface Slide {
   readonly src: string;
   readonly title: string;
-  readonly meta: string;
   readonly summary: string;
   readonly alt: string;
   readonly width: number;
@@ -60,7 +59,6 @@ function readSlide(trigger: Element): Slide {
   return {
     src: trigger.getAttribute('data-lightbox-src') ?? trigger.getAttribute('href') ?? '',
     title: trigger.getAttribute('data-lightbox-title') ?? '',
-    meta: trigger.getAttribute('data-lightbox-meta') ?? '',
     summary: trigger.getAttribute('data-lightbox-summary') ?? '',
     alt: image?.getAttribute('alt') ?? '',
     width: Number(trigger.getAttribute('data-lightbox-width') ?? '0'),
@@ -215,7 +213,6 @@ export default function Lightbox() {
               <h3 className="cnsq-lightbox__title" id="cnsq-lightbox-title">
                 {active.title}
               </h3>
-              <p className="cnsq-lightbox__meta">{active.meta}</p>
               <p className="cnsq-lightbox__summary">{active.summary}</p>
             </figcaption>
           </figure>
